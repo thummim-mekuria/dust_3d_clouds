@@ -1,0 +1,572 @@
+\documentclass[twocolumn]{aastex631}
+% NOTE: Your template uses \documentclass[twocolumn]{aastex631} and
+% \bibliographystyle{aasjournal}. This TeX installation ships the current
+% AAS release (aastex701 + aasjournalv7) instead, which is structurally
+% identical. To compile against aastex631, change the two lines back.
+
+\newcommand{\vdag}{(v)^\dagger}
+\newcommand\aastex{AAS\TeX}
+\newcommand\latex{La\TeX}
+
+\usepackage{gensymb}
+\usepackage{amsmath}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{xfrac}
+\usepackage{threeparttable}
+\usepackage{xcolor}
+
+% ---------------------------------------------------------------------------
+% Figure placeholder: renders a labeled gray box in place of a real figure.
+% Replace \figplaceholder{figN} with \includegraphics[width=\linewidth]{figN}
+% once the real figure files are available.
+% ---------------------------------------------------------------------------
+\newcommand{\figplaceholder}[1]{%
+  \setlength{\fboxsep}{0pt}%
+  \fcolorbox{gray}{gray!12}{%
+    \begin{minipage}[c][0.60\linewidth][c]{0.985\linewidth}%
+      \centering
+      {\Huge\bfseries #1}\\[6pt]
+      {\large\color{gray} placeholder figure}
+    \end{minipage}}%
+}
+
+% Shorthand for commonly repeated symbols
+\newcommand{\bperp}{b_{\perp}}
+\newcommand{\Msun}{M_\odot}
+\newcommand{\cosi}{\cos i}
+
+\begin{document}
+
+\title{The Global Structure of Molecular Clouds. II. Volume-Density Distributions}
+
+\author[0009-0004-7985-6342]{Thummim Mekuria}
+\email{tmekuria@ucsc.edu}
+\affiliation{University of California, Santa Cruz \\
+1156 High Street, Santa Cruz, CA 95064, USA}
+
+
+\author[0000-0002-6001-598X]{Nia Imara}
+\email{nimara@ucsc.edu}
+\affiliation{University of California, Santa Cruz \\
+1156 High Street, Santa Cruz, CA 95064, USA}
+
+\author{John C. Forbes}
+\email{john.forbes@canterbury.ac.nz} 
+\affiliation{School of Physical and Chemical Sciences--Te Kura Mat\=u \\
+University of Canterbury, Christchurch 8140, New Zealand}
+\affiliation{Center for Computational Astrophysics \\
+162 5th Avenue, New York, NY 10010, USA}
+
+\begin{abstract}
+We test a cylindrical model for the large-scale, global 3D structure of molecular clouds with observations of dust-extinction in the Solar Neighborhood. \textcolor{red}{something about: volume density distribution of gas and its relationship to star formation.} We \textcolor{red}{fit the profiles over a range of distance bins and find solutions that fit each of the observed radial surface density profiles remarkably well.} We find that there is a \textcolor{red}{x type of relationship between the central volume density of a cloud $\rho_0$ and the turnover radius $r_0$. additionally, [this] is the relationship with mass. mass is also correlated with depletion time as [relationship], which is <robust to / depends on> some other factor that mass is usually connected to in the models. what are the implications of these results in terms of further developing the physical model. what are the implications of this wrt the field / ie where is it situated.}
+\end{abstract}
+
+\keywords{Molecular clouds (1072) --- Interstellar medium (847) --- Star formation (1569) ---
+Interstellar dust extinction (837) --- Interstellar dust (836) ---
+Interstellar filaments (842)}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% INTRODUCTION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Introduction}\label{sec:intro}
+\textcolor{red}{more ab morphology: works since this one that are about three-dimensional structure, big picture theory: enrique's work on filamentary flow, and lla10 on star formation, observations: dust-extinction derived maps}
+
+ \textcolor{red}{the structure of molecular clouds is key to developing a complete picture of star formation and ultimately of galaxy evolution.
+It has been known for some time that molecular clouds have certain global properties in common. the discovery by \citet{Larson1981} that the mass and size of molecular clouds follow a power-law scaling, $M \sim R^2$, implying that the third relation suggests that molecular clouds have constant surface density. }
+
+\textcolor{red}{Using dust extinction instead of CO observations to determine the clouds' masses and sizes enabled \citet{Lombardi2010} to investigate the validity of Larson's third ``law'' over a larger dynamical range of column densities. They found that molecular clouds have column density variations spanning more than two orders of magnitude, though the clouds' average column densities above a given extinction threshold are nearly constant. From the theoretical perspective, \citet{BallesterosParedes2012} demonstrated that the roughly constant surface density of clouds is a consequence of observational methods that tend to define clouds at an extinction threshold close to the peak of the column density probability distribution function, which falls off rapidly at higher column densities.}
+
+\textcolor{red}{ we start from the premise that molecular clouds have () density profiles that . We explore the idea that variations in the surface density of clouds may contain information about their evolutionary state and their capacity to form stars. In other words, we ask the question: what is the global structure of molecular clouds, and how does this structure relate to star formation? To address this question, we propose a simple three-dimensional model for
+cylindrical molecular clouds and apply it to dust extinction measurements of a
+sample of nearby clouds having a range of star formation rates (SFRs). The model is inspired by observations showing that, on global scales, clouds frequently have elongated or filamentary shapes, i.e., they have high aspect ratios.}
+
+\textcolor{red}{The molecular interstellar medium is pervaded by filamentary structures at a
+range of spatial scales, including the scale of molecular clouds
+($\sim$10--100~pc) \citep[e.g.,][]{Andre2010, Molinari2010, Li2013, Zucker2018,
+Zhang2019, Schisano2020, Wang2020}. Using $^{13}\mathrm{CO}$ data taken with
+APEX, \citet{Neralwar2022} identified a population of more than 10,000 molecular clouds in the inner galaxy and classified them according to morphology. They concluded that most of the clouds in their sample are elongated (57\%), with the remaining belonging either to the ``ring-like,'' ``concentrated,'' or ``irregular'' classes.}
+
+\textcolor{red}{Our key results are that (1) this is a useful model for understanding the architecture of clouds in a way that takes into account their
+three-dimensional nature, and (2) clouds can be characterized by a universal
+structure that links to the efficiency with which they form stars.}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% THE MODEL %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{The Model}\label{sec:model}
+\textcolor{red}{talk about Zucker paper where they identify spines Surface density maps of Galactic molecular clouds show that they often have elongated shapes, with much of their high-column-density gas concentrated along a central axis. For such clouds, one might reasonably assume---as we do here---that this elongated appearance is because their 3D morphology is cylindrical. Some computer simulations show that structures appearing to be filamentary/cylindrical are sometimes more flattened, sheet-like structures viewed in projection \citep[e.g.,][]{Imara2021}. Recent observational work by \citet{Tritsis2022} and \citet{Rezaei2023} to infer the volume density structure of molecular clouds using dust maps supports this view. In this study, we model molecular clouds as cylinders and choose a sample of clouds that appear to approximate this morphology. We will consider other geometries in future work.}
+
+\textcolor{red}{One of our goals is to tease out information about the volume density
+distribution of gas that has been projected onto the plane of the sky in surface density maps. Rather than trying to capture all of the intricate substructure known to comprise molecular clouds---e.g., filaments, clumps, and cores---our goal is to characterize their large-scale, global structure.}
+
+\begin{figure}[ht!]
+\centering
+\figplaceholder{fig1}
+\caption{maps of a molecular cloud (perseus) - orthogonal, with spines overplotted for different distance ranges}
+\label{fig:maps}
+\end{figure}
+
+\textcolor{red}{Figure~\ref{fig:model} shows a labeled illustration of our model. We call the
+length of a cloud $L$. In surface density maps of clouds like the Orion Molecular Clouds and the Perseus Molecular Cloud, one can often see that much of the highest
+column-density gas is concentrated along a central axis
+\citep[e.g.,][]{Lombardi2010, Lombardi2011, Imara2016}, which we will refer to here as the \emph{spine}. The perpendicular distance from the spine to any point
+is $r$, and the maximum radius $R_T$ is the distance from the spine to the edge.}
+
+\textcolor{red}{We define the radial volume density profile of a cloud, $\rho(r)$, as
+\begin{align}\label{eq:rho}
+\rho = \frac{\rho_0}{\left[1 + \left(\dfrac{r}{r_0}\right)^2\right]^{\alpha}},
+\end{align}
+where $\rho_0$ is the peak density along the central spine of the cloud, and
+$r_0$ is the ``turnover'' radius inside of which the density is roughly constant,
+i.e., $\rho \approx \rho_0$. The exponent $\alpha$ describes how quickly the
+density falls off beyond $r_0$. Going forward, we refer to the volume density
+profile simply as $\rho$ and consider the radial dependence to be implied.}
+
+\textcolor{red}{The expression for an isothermal cylinder, in which $\alpha = 2$, was derived by
+\citet{Stodolkiewicz1963} and \citet{Ostriker1964}:
+$\rho_{\mathrm{iso}} = \rho_0[1 + r^2/8r_0^2]^{-2}$. In this instance, the scaling
+radius, $r_0$, is equivalent to the Jeans length,
+$r_0 = \sqrt{c_s^2 / 4\pi G \rho_0}$, where $c_s$ is the isothermal sound speed.
+Clouds with the $\alpha = 2$ profile would have a steeply declining density of
+$\rho \propto r^{-4}$ far from the central axis. In observed cylindrical clouds,
+however, the density appears to fall off more moderately
+\citep[e.g.,][]{Fiege2000, Arzoumanian2011, Toci2015}. In our model, we leave
+$\alpha$, $\rho_0$, and $r_0$ as free parameters.
+ We note that any variation of
+$\rho_0(L)$, which is the density along the spine, is averaged out in the data
+(see Equation~\ref{eq:sigmai}), so there is no reason to include it in the model.
+Moreover, for simplicity, we assume that $r_0$ does not vary along the symmetry
+axis. When we apply Equations~(\ref{eq:rho}) and (\ref{eq:sigmamodel}) to the
+data, we are therefore fitting for $\rho_0\cosi$ rather than $\rho_0$ itself,
+where $i$ is the angle between the plane of the sky and the cylinder's symmetry
+axis.}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% OBSERVATIONS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Observations}\label{sec:obs}
+
+\subsection{Three-dimensional reconstruction}\label{sec:obs}
+\textcolor{red}{Gaia photometry and parallaxes make it possible to map the line-of-sight extinction due to dust with high angular resolution (down to 0.11 degree). These have various sky and distance coverages (out to x kpc) which make them suitable for () analyses. of the available dust maps, the edenhofer map matches the requirements of the science}
+\subsection{Cloud Sample}\label{sec:sample}
+\textcolor{red}{we start with the set of clouds studied by \citep{2023ApJ...956..114I}, except for the Rosette molecular cloud, which is located beyond the reaches of the edenhofer map. }
+we also include \textcolor{red}{which clouds are additional and why}
+
+\textcolor{red}{We generated the extinction maps using the near-infrared color excess method of
+\citet{Lombardi2009} and \citet{Lombardi2011}. This technique uses $JHK$ photometric data from the Two Micron All Sky Survey \citep{Skrutskie2006} to
+measure dust extinction along many lines of sight toward clouds. For each individual cloud, measuring the extinction involves the selection of a control field where the extinction is negligible, in order to calibrate the intrinsic colors of the stars. The resulting maps in units of visual extinction, $A_V$, can be converted into units of surface density. Lombardi offers an interactive
+website called iNICEST that we used to construct the clouds, based on our chosen parameters.\footnote{\url{http://interstellarclouds.fisica.unimi.it/html/index.html}} The resulting maps are shown in Figure~\ref{fig:maps}.}
+
+\begin{deluxetable}{lccccc}
+\tablecaption{Cloud Boundaries and Distances\label{tab:clouds}}
+\tablehead{
+\colhead{Cloud} & \colhead{Distance} & \colhead{$l$ Bounds} &
+\colhead{$b$ Bounds} & \colhead{Pixel Scale} \\
+\colhead{Name} & \colhead{(pc)} & \colhead{($\degree$)} &
+\colhead{($\degree$)} & \colhead{(pc)}}
+\startdata
+Ophiuchus  & 136  & $(-9, -2)$     & $(13, 19)$     & 0.051 \\
+Corona     & 156  & $(-2.5, 6.5)$  & $(-26, -16)$   & 0.048 \\
+Perseus    & 282  & $(155, 162)$   & $(-27, -15)$   & 0.11  \\
+Orion A    & 426  & $(205, 217)$   & $(-21, -18.5)$ & 0.14  \\
+Orion B    & 431  & $(201, 210)$   & $(-17.5, -13)$ & 0.15  \\
+California & 452  & $(155, 169)$   & $(-6, -10)$    & 0.16  \\
+MonR2      & 785  & $(211, 219)$   & $(-15, -10)$   & 0.33  \\
+Rosette    & 1343 & $(203, 210)$   & $(-4.5, 0)$    & 0.48  \\
+\enddata
+\end{deluxetable}
+
+\begin{figure*}[ht!]
+\centering
+\figplaceholder{fig2}
+\caption{rho vs r profiles}
+\label{fig:maps}
+\end{figure*}
+
+\subsection{Cloud Properties}\label{sec:properties}
+
+\textcolor{red}{the latitude and longitude bounds of each cloud are used as a guide for where to find the clouds in the edenhofer map. the distances calculated by (zucker? thavisha?) are used as a guide for where to locate the clouds along the line of sight. (x amount of the time, ) the extinction peak at $d_{cloud}$ was the most significant feature along the line of sight, while the remaining () of the time, there were (number or larger) of distinct clouds. is there a correlation between the number of line-of-sight peaks and total integrated mass along the aperture 
+Any pixels in the map whose centers fall within a particular bin are averaged,
+producing a sequence of column densities $\Sigma_i$ associated with bin centers}
+$\bperp{}_{,i}$:
+\begin{align}\label{eq:sigmai}
+\Sigma_i = \left(\sum_j A_{V,j}\, \mathbb{1}_{\perp,ij}\right)
+\bigg/ \left(\sum_j \mathbb{1}_{\perp,ij}\right),
+\end{align}
+where $A_{V,j}$ is the $A_V$ value of pixel $j$, and $\mathbb{1}_{\perp,ij}$ is an
+indicator function,
+\begin{align}\label{eq:indicator}
+\mathbb{1}_{\perp,ij} =
+\begin{cases}
+1 & \text{if } \bperp{}_{,i} - \tfrac{1}{2}\Delta\bperp \le
+    \bperp{}_{,j,\mathrm{pix}} < \bperp{}_{,i} + \tfrac{1}{2}\Delta\bperp, \\
+0 & \text{otherwise},
+\end{cases}
+\end{align}
+\textcolor{red}{where $\bperp{}_{,j,\mathrm{pix}}$ is the $\bperp$ coordinate of the $j$th pixel.
+The bin width $\Delta\bperp$ is chosen to be five times the pixel scale of each
+map at the median adopted distance of each cloud. The conversion factor from $A_V$
+to a surface density in mass per unit area is \citep{Guver2009}
+\begin{align}\label{eq:conversion}
+\frac{N_{\mathrm{H}}}{A_V} = 2.21 \times 10^{21}\;
+\frac{\text{H nuclei cm}^{-2}}{A_V\,(\mathrm{mag})} \cdot m_{\mathrm{H}},
+\end{align}
+where $m_{\mathrm{H}}$ is the mass of a hydrogen atom. It should be noted that the
+maps themselves are in units of $K$-band magnitudes of extinction, $A_K$. We take
+$A_K/A_V = 0.11$.}
+
+\textcolor{red}{This procedure is repeated $N_{\mathrm{boot}}$ times with slightly different
+choices in the parameters that define the procedure (namely $A_{V,\mathrm{high}}$
+and the adopted distance), and with maps produced by sampling pixels from the
+entire original map with replacement. $A_{V,\mathrm{high}}$ is varied uniformly
+between the 97.5th and 99.5th percentile, and distance is varied by 10\% given the
+observed scatter between the dust-based and VLBI-based distances
+\citep[e.g.,][]{Brunthaler2011, Loinard2013, Reid2014, Reid2016, Zucker2020}. This
+procedure produces $N_{\mathrm{boot}}$ replicates of $\Sigma_i$, allowing us to
+estimate the covariance of the $\Sigma_i$ via the sample covariance:
+\begin{align}\label{eq:cov}
+\hat{S}_{ij} = \frac{1}{N_{\mathrm{boot}}} \sum_{k=1}^{N_{\mathrm{boot}}}
+\left(\Sigma_{i,k} - \bar{\Sigma}_i\right)
+\left(\Sigma_{j,k} - \bar{\Sigma}_j\right),
+\end{align}
+where $\Sigma_{i,k}$ denotes the $k$th replicate of $\Sigma_i$ and
+$\bar{\Sigma}_i$ is the mean value of $\Sigma_i$ across the $N_{\mathrm{boot}}$
+replicates.}
+
+\textcolor{red}{In addition to the $\Sigma_i$, we can also compute any quantity that depends on
+the map and/or the cloud's distance. Of particular importance is each cloud's
+mass, either including or excluding thresholds in $A_V$. Masses are computed as
+\begin{align}\label{eq:mass}
+M = \sum_j A_{V,j}\, d^2\, \Delta l\, \Delta b\, \mathbb{1}_j,
+\end{align}
+where $d$ is the distance to the cloud, $\Delta l$ and $\Delta b$ are the (equal)
+pixel scales in each direction of the map (in radians), and $\mathbb{1}_j$ is 1 if
+and only if the following conditions are met:}
+\begin{enumerate}
+\item The pixel has a $\bperp < \bperp{}_{,\mathrm{max}}$.
+\item At the pixel's coordinate along the spine of the cylinder
+      ($b_\parallel$), there must be at least one $\bperp$ bin within the
+      $A_V = 1$ contour.
+\item The pixel is within the $l$ and $b$ bounds defined in
+      Table~\ref{tab:clouds}.
+\end{enumerate}
+\textcolor{red}{These conditions correspond to the boundaries shown in Figure~\ref{fig:maps}. Given an estimate of $S_{ij}$, we can now reasonably evaluate the likelihood of an
+observed surface density profile $\Sigma_i$ given fixed values of the model
+parameters $\rho_0$, $\alpha$, $r_0$, and $R_T$. To account for additional
+systematic uncertainties, including the deliberately simple nature of the model,
+we also include a parameter $\sigma^2$ that is added to each diagonal component of
+$\hat{S}$. The likelihood is therefore a multivariate normal,}
+\begin{align}\label{eq:likelihood}
+\mathcal{L} &= p\left(\{\Sigma_i\} \mid \rho_0\cosi, \alpha, r_0, R_T,
+\sigma^2\right) \nonumber \\
+&= \frac{1}{\sqrt{(2\pi)^N \det \mathcal{C}}}
+\exp\left(-\tfrac{1}{2} z^{T}\, \mathcal{C}^{-1}\, z\right),
+\end{align}
+where $z$ denotes the displacement vector with components
+\begin{align}\label{eq:z}
+z_i = \Sigma_i - \Sigma_{\mathrm{model}}(\bperp{}_{,i};\, \rho_0\cosi, \alpha,
+r_0, R_T).
+\end{align}
+The covariance matrix has components
+\begin{align}\label{eq:C}
+\mathcal{C}_{ij} = \hat{S}_{ij} + \sigma^2 \delta_{ij},
+\end{align}
+where $\delta_{ij} = 1$ if $i = j$ and 0 otherwise. The $N$ appearing in
+Equation~(\ref{eq:likelihood}) is the number of bins of $\bperp$.
+
+\textcolor{red}{To fit this model, we need to specify a prior distribution of the model
+parameters. We choose broad/noninformative priors on the log of each variable
+independently. These distributions are listed in Table~\ref{tab:priors}. We do
+impose an upper limit on $\log\sigma^2$ equal to the log of the variance of the
+$\Sigma_i$, minus an additional $(0.6\,\mathrm{dex})^2$, to remove a branch of the
+posterior distribution in which the physical parameters play no role and all
+variation in the data is attributed to scatter from $\sigma^2$. Samples from the
+posterior distribution are drawn with the Python package }\texttt{emcee}
+\citep{Goodman2010, ForemanMackey2013}.
+
+\begin{deluxetable*}{lll}
+\tablecaption{Model Parameters and Prior Distributions\label{tab:priors}}
+\tablehead{
+\colhead{Parameter} & \colhead{Definition} & \colhead{Prior Distribution}}
+\startdata
+$\log(\rho_0\cosi)$ $[\Msun\,\mathrm{pc}^{-3}]$ & Central volume density
+  & Uniform $(-2.3, 2.3)$ \\
+$\log r_0$ $[\mathrm{pc}]$ & Scale radius & Uniform $(-2.3, 1)$ \\
+$\log\alpha$ & Envelope steepness & Uniform $(-2.3, 2.3)$ \\
+$\log R_T$ $[\mathrm{pc}]$ & Truncation radius & Uniform $(-2.3, 2.3)$ \\
+$\log\sigma^2$ $[(\Msun\,\mathrm{pc}^{-2})^2]$ & Unmodeled column density error
+  & Uniform $(-2.3, \log s^2_{\Sigma_i} - 0.6^2)$ \\
+\enddata
+\end{deluxetable*}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% RESULTS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Results}\label{sec:results}
+
+\subsection{Average dust radial volume density}
+\subsection{$\rho_0$ vs $r_0$}
+\subsection{Star Formation Depletion Time}
+\subsection{comparison with traditional measurements}
+
+
+\textcolor{red}{Figure~\ref{fig:profiles} displays the averaged radial dust column density
+profiles of the eight clouds in our sample. The high resolution of the data
+allows a careful comparison with our model. We see that, for each cloud, there is
+a solution that fits the data remarkably well. The blue points show the
+$\Sigma_i$ for each cloud, while the pink shaded areas (pink lines) show the
+central 68\% confidence interval (median) for the conditional distribution
+$\Sigma \mid \bperp$ over a finely sampled range of values for $\bperp$.
+Generally, the model is a good description of the data points, with uncertainties
+increasing toward $\bperp \to 0$, given the finite resolution of the maps.}
+
+\begin{figure}[ht!]
+\centering
+\figplaceholder{fig3}
+\caption{Observed radially averaged surface densities (blue circles) as a
+function of $\bperp$. Pink shaded areas (pink lines) show the central 68\%
+confidence interval (median) for the conditional distribution $\Sigma \mid \bperp$
+over a finely sampled range of values for $\bperp$.}
+\label{fig:profiles}
+\end{figure}
+
+\textcolor{red}{Figure~\ref{fig:params} shows the relationships between the main model parameters,
+$\rho_0\cosi$, $r_0$, and $\alpha$. There is a clear anticorrelation between
+$\rho_0\cosi$ and $r_0$, such that clouds with higher central volume densities are
+more ``compact,'' at least insofar as they have smaller scale radii $r_0$.
+Meanwhile $\alpha$, which determines the falloff of density with radius for
+$r \gg r_0$ (see Equation~\ref{eq:rho}), has no apparent relationship with
+$\rho_0\cosi$ or $r_0$, and it simply falls within a range of $\sim$0.5--1, which
+is broadly similar to previous estimates of filamentary density profiles
+\citep[e.g.,][]{Arzoumanian2011, Palmeirim2013, Toci2015, Zucker2018,
+Arzoumanian2019}.}
+
+\begin{figure}[ht!]
+\centering
+\figplaceholder{fig4}
+\caption{Results of fitting the explicit cylinder model. Each cloud's median
+posterior values of $\rho_0$, $r_0$, and $\alpha$ are plotted, with error bars
+showing the central 68\% of the marginal distribution of each parameter. Clouds
+with higher central densities $\rho_0$ tend to have more compact centers (lower
+$r_0$), but all clouds have $\alpha$ between about 0.5 and 1.}
+\label{fig:params}
+\end{figure}
+
+\textcolor{red}{Concentrating on $\rho_0\cosi$, which has a strong relationship with $r_0$, we
+compare $\rho_0$ to each cloud's mass within its $A_V > 1$ contour and the cloud's
+corresponding depletion time, defined as its mass divided by its star formation
+rate (Figure~\ref{fig:depletion}). The clouds' SFRs are derived from counts of
+their young stellar objects (YSOs) based on infrared data
+\citep[e.g.,][]{Hillenbrand1997, Lada2009} and applying the conversion
+\begin{align}\label{eq:sfr}
+\mathrm{SFR} = N_{\mathrm{YSO}} \cdot 0.25 \times 10^{-6}\, \Msun\,\mathrm{yr}^{-1}
+\end{align}
+from \citet{Lada2010}. The interested reader may refer to Table~2 of
+\citet{Lada2010} for additional references on YSO counts for most clouds, and to
+\citet{Gutermuth2011} for MonR2.}
+
+\textcolor{red}{We find that clouds with the highest central volume densities in our sample tend
+to have the lowest masses and the shortest depletion times, or equivalently the
+highest SFRs relative to their masses. It is to be expected that star formation
+might proceed more vigorously in denser gas, given that the freefall time scales
+as $\rho^{-1/2}$, but it is less intuitive that higher central volume densities
+should correspond to lower masses. We speculate on the ultimate cause of this
+correlation in the next section.}
+
+\begin{figure}[ht!]
+\centering
+\figplaceholder{fig5}
+\caption{The central density of each cloud relative to its mass and depletion
+time. Clouds with higher central densities tend to have lower masses and shorter
+depletion times.}
+\label{fig:depletion}
+\end{figure}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% DISCUSSION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Discussion}\label{sec:discussion}
+\subsection{comparison with 2D }
+\textcolor{red}{The clouds' central volume densities
+$\rho_0\cosi$ seem to be closely tied to their scale radii $r_0$, their masses
+$M_{A_V > 1}$, and their depletion times $M_{A_V > 1}/\mathrm{SFR}$, but with
+little correspondence to their outer power-law slopes $-2\alpha$ or their
+truncation radii $R_T$. To delve into these potential relationships, we have found
+it helpful to plot the inferred density profiles as a function of radial distance
+from the spine in Figure~\ref{fig:rho}.}
+
+\textcolor{red}{While there is still a fair amount of variety between the clouds, some of which may
+come from the unknown inclination $i$, we see that, roughly speaking, the clouds'
+density profiles fit within an envelope of
+$\rho_{\mathrm{env}} \approx 10\,(r/\mathrm{pc})^{-1}\,\Msun\,\mathrm{pc}^{-3}$,
+with each cloud having a different radius and density at which it turns over and
+flattens toward $r \to 0$. In this sense, the relationship between $r_0$ and
+$\rho_0\cosi$ becomes clear: the higher the central density, the smaller the
+turnover radius must be in order to remain within the $\rho_0\cosi \lesssim 1/r$
+envelope.}
+
+\begin{figure}[ht!]
+\centering
+\figplaceholder{fig6}
+\caption{Inferred density profiles as a function of radial distance. As in
+Figure~\ref{fig:profiles}, the conditional posterior distribution at each radius
+is represented by a line at the median value for each cloud and a shaded region
+showing the central 68\% of the distribution. Here we show the distribution of
+$\rho \mid r$ for each cloud. The black dashed line shows
+$\rho_{\mathrm{env}} = 10\,(r/\mathrm{pc})^{-1}\,\Msun\,\mathrm{pc}^{-3}$.}
+\label{fig:rho}
+\end{figure}
+
+\textcolor{red}{The interpretation of the clouds' density profiles as lying within this envelope
+also helps explain the clouds' masses, and in particular the somewhat surprising
+fact that clouds with higher central densities have lower total masses. As long as
+$\rho(r)$ is less steep than $1/r$ near the cloud center, the exact density profile
+in the central pc will not have a large effect on the cloud's mass. Instead, the
+clouds' masses will be dominated by the large-radius behavior, for which we can use
+the $1/r$ envelope, obtaining
+\begin{align}\label{eq:massenv}
+M \sim \int 2\pi\, r\, \rho_{\mathrm{env}}\, dr
+\approx 70\, \Msun \left(\frac{\ell_{\parallel,\mathrm{max}}}{\mathrm{pc}}\right)
+\left(\frac{\bperp{}_{,\mathrm{max}}}{\mathrm{pc}}\right).
+\end{align}
+This is equivalent to stating that within the boundary of the cloud, the average
+surface density is $\sim$70~$\Msun\,\mathrm{pc}^{-2}$, similar to Larson's classic
+result \citep{Larson1981} and more recent results on molecular filaments
+\citep{Zhang2019}.}
+
+\textcolor{red}{The star formation rate, meanwhile, is expected to obey some relationship with the
+volume density of the gas \citep{Schmidt1959, Kennicutt2012}. For volume
+densities, the density of the star formation rate is commonly expressed as
+\begin{align}\label{eq:rhosfr}
+\rho_{\mathrm{SFR}} = \frac{\epsilon_{\mathrm{ff}}\, \rho}{t_{\mathrm{ff}}},
+\end{align}
+where $\epsilon_{\mathrm{ff}}$ is an efficiency factor of order 1\%
+\citep[e.g.,][]{Krumholz2007, Krumholz2012}, and the freefall time
+$t_{\mathrm{ff}} = \sqrt{3\pi/32 G \rho}$. Interestingly, integrating
+Equation~(\ref{eq:rhosfr}) over the volume of the model cylinders does not
+reproduce the observed SFRs as measured by YSO counts, except for California and
+Rosette. In most other clouds, Equation~(\ref{eq:rhosfr}) applied to the smooth
+model falls short of the actual SFR by about a factor of 10, because our smoothed
+distribution averages out high-density peaks.}
+
+\textcolor{red}{While the inferred large-scale density distribution of the cloud cannot be used to
+infer the SFR directly by integration of Equation~(\ref{eq:rhosfr}), there is still
+a trend between the depletion time and the parameters of the large-scale cloud
+model. Very roughly, $t_{\mathrm{dep}} \propto (\rho_0\cosi)^{-1}$.}
+
+\textcolor{red}{\citet{Lada2010}, hereafter LLA10, showed using the same dust extinction data and
+a similar sample of local molecular clouds that depletion time has no discernible
+trend with cloud mass, defined as mass within the $A_V = 1$ contour, and that the
+spread in depletion times becomes much smaller when using the mass within a contour
+of $A_V \gtrsim 8$. In Figure~\ref{fig:massdep}, we show the trends between mass and
+depletion time for both $A_V > 1$ and $A_V > 8$. Where LLA10 found no trend with
+total mass, we find that higher-mass clouds have longer depletion times, regardless
+of whether we look at total mass or dense mass. We do recover the main result that
+the scatter in depletion times is substantially reduced when looking at the dense
+mass, though not quite as much as in LLA10.}
+
+\begin{figure*}[ht!]
+\centering
+\figplaceholder{fig7}
+\caption{The scaling of cloud mass (left panel) and $\ell_{\parallel,\mathrm{max}}$
+and $\bperp{}_{,\mathrm{max}}$ (right panel) with $r_0$. In the right panel, the
+$\bperp{}_{,\mathrm{max}}$ have smaller values and the markers are not filled. Both
+$\ell_{\parallel,\mathrm{max}}$ and $\bperp{}_{,\mathrm{max}}$ scale with $r_0$ but
+with a logarithmic slope less than 1.}
+\label{fig:scaling}
+\end{figure*}
+
+\begin{figure*}[ht!]
+\centering
+\figplaceholder{fig8}
+\caption{Depletion time as a function of mass, as defined for material within
+$A_V > 1$~mag (left) and $A_V > 8$~mag (right). Dashed lines in the right panel
+show a factor of $\pm 2$ spread (from the solid line) in dense gas depletion time,
+comparable to the extremes of the \citet{Lada2010} result. While we reproduce the
+LLA10 result that spread in depletion times becomes smaller when focusing on gas
+in high-extinction regions, we do see a trend in both panels that higher-mass
+clouds have longer depletion times.}
+\label{fig:massdep}
+\end{figure*}
+
+\textcolor{red}{We can attribute the differences from LLA10 to four factors: first, we have used
+updated distances to the clouds based on Gaia distances \citep{Zucker2020};
+second, we have used a somewhat different selection of clouds; third, we have used
+slightly different definitions of the clouds and their masses; and fourth, our
+method produces confidence intervals for the cloud masses, which changes the
+assessment of which trends are plausible versus implausible.}
+
+\textcolor{cyan}{While our results provide an interesting new perspective on well-studied local molecular clouds, they also have broader implications. Models in a variety of contexts depend explicitly or implicitly on breaking the star formation rate in a
+patch of the interstellar medium, a whole galaxy, or even across galaxies, into a population of molecular clouds \citep{Chevance2020, Tacchella2020}. This variability has been invoked to explain the discovery by JWST of galaxies at $z \sim 6$ that have, at least momentarily, stopped forming stars
+\citep{Dome2023}. Extragalactic surveys with large sample sizes are able to constrain the cloud scaling relations that enter into these models
+\citep[e.g.,][]{Hughes2013, Faesi2018, Rosolowsky2021}. Just as the global star formation rate can be broken into its contributions from individual clouds, the line luminosities from star-forming regions at high redshift are summed from individual clouds \citep{Krumholz2014, Narayanan2014, Narayanan2017}, and changes in the underlying assumptions about the typical morphology of clouds may alter the inference of the galaxy property distribution \citep{Zhang2023} from forthcoming emission line intensity mapping surveys \citep[e.g.,][]{Pullen2023}.}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% SUMMARY %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Summary}\label{sec:summary}
+\textcolor{red}{We test the Imara-Forbes cylindrical model of global molecular cloud morphology using dust-extinction derived three-dimensional reconstructions of solar Neighborhood molecular clouds. the 
+ We find that there are a range of model parameters that produce a good fit to the observed radial distribution of volume density for each of the clouds. }
+ \textcolor{red}{
+\begin{enumerate}
+\item There is a clear anti-correlation between the central volume density
+      $\rho_0$ and the turnover radius $r_0$, implying that clouds with higher
+      $\rho_0$ are more compact. This can be explained by observing that the
+      clouds' density profiles fit within an envelope of
+      $\rho_{\mathrm{env}} \approx 10\, r^{-1}\,\Msun\,\mathrm{pc}^{-3}$. The
+      higher the central density, the smaller $r_0$ must be in order to remain
+      within the $\rho \lesssim 1/r$ envelope.
+\item Somewhat surprisingly, clouds with higher central densities have lower total
+      masses. This is because the density profile in the central pc does not have
+      a large effect on a cloud's mass, as long as $\rho(r)$ is less steep than
+      $1/r$ near the cloud center. Clouds' masses will be dominated by the
+      large-radius behavior, described by the $1/r$ envelope.
+\item Higher-mass clouds have longer depletion times, regardless of whether we
+      consider their total mass or dense mass.
+\item While the overall dense gas fraction of molecular clouds helps to explain
+      some of the variation in the depletion time, our results show that the global
+      cylindrical structure of clouds---reflected, for instance, in the central
+      volume density---plays a key role in determining $t_{\mathrm{dep}}$.
+\end{enumerate}}
+
+\begin{acknowledgements}
+acknowledgements
+\end{acknowledgements}
+
+\software{emcee \citep{ForemanMackey2013},
+          corner \citep{ForemanMackey2016}}
+          \textcolor{red}{astropy scipy numpy pandas }
+
+\bibliography{references}
+\bibliographystyle{aasjournalv7}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% APPENDIX %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\appendix
+\counterwithin{figure}{section}
+
+\section{}\label{sec:appendix}
+
+A key step in our analysis is the fitting of an explicit parameterized model for
+the 3D density structure of molecular clouds to the column density profiles of each
+molecular cloud in our sample. Throughout this work, we typically show points with
+error bars for posterior predictive quantities, where the points show the median of
+the relevant 1D marginal posterior distribution, and the error bars show the
+central 68\% of the distribution. However, it is often helpful to look at a more
+systematic representation of the posterior distribution to understand nontrivial
+features like degeneracies, sensitivity to the prior distribution, and
+multimodality. We therefore show an example corner plot \citep{ForemanMackey2016},
+in this case for our fit to the Orion B molecular cloud.
+
+\begin{figure}[ht!]
+\centering
+\figplaceholder{fig9}
+\caption{A corner plot for our model fit to the Orion B molecular cloud. The
+histograms on the diagonal show the 1D marginal posterior distributions of the five
+parameters in the model, while the off-diagonal plots show each 2D marginal
+posterior distribution, representing the distribution through a combination of
+contours and individual points in less sparsely populated areas.}
+\label{fig:corner}
+\end{figure}
+
+The summary of the fit shown in Figure~\ref{fig:corner} displays several
+interesting features, including both linear and nonlinear degeneracies, as well as
+several upper/lower limits. The most important is probably the 1:1 degeneracy
+between $\log_{10} r_0$ and $\log_{10}(\rho_0\cosi)$. In the limit where
+$r \gg r_0$, the density profile according to Equation~(\ref{eq:rho}) is just
+$\rho_0 (r_0/r)^{2\alpha}$. It follows that, at fixed $\alpha$, the model would
+predict identical density profiles for any value of $r_0$ so long as
+$\rho_0 r_0^{2\alpha}$ is held constant. Despite this degeneracy, Orion B's values
+of $\rho_0$ and $r_0$ are quite tightly constrained, because Orion B, like most
+clouds in the sample, includes constraints from $\bperp < r_0$, which breaks the
+degeneracy between $r_0$ and $\rho_0$.
+
+\end{document}
