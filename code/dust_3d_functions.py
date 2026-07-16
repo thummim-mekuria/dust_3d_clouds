@@ -1,11 +1,11 @@
 """
 Functions extracted from 21_serious_time.ipynb.
 
-Several functions rely on module-level data that the notebook loads in its
-"reading in" cell and never passes as arguments (e.g. coordses, ds, drs,
-names, ednhfr_cm3, table1, spines, og_if_clouds). That data-loading code was
-NOT copied here since it's data, not a function -- define/import those
-globals yourself before calling functions that need them.
+table1/ds/drs/names are loaded at module level below. The dust cube is passed
+in explicitly as `source_array` rather than read from a global.
+
+`spines` is still an unresolved module-level global -- `input_spine` needs it
+and nothing here defines it.
 
 `eq2_if` below is a leftover from 17_.ipynb, has no counterpart in
 21_serious_time.ipynb, and was syntactically incomplete where it came from,
@@ -30,6 +30,22 @@ from scipy.optimize import minimize, curve_fit
 from scipy.signal import find_peaks
 
 from joblib import Parallel, delayed
+
+
+# ---------------------------------------------------------------------------
+
+data_loc = '../../../data/'
+table1 = pd.read_csv(data_loc+'mif_tab1_final.csv',delimiter=',')
+
+ds    = table1['d(pc)'].to_numpy().astype('float')
+names = table1['Name']
+
+drs = np.nanmax((np.nanstd(table1[['l0(°)', 'l1(°)']],axis=1),
+                 np.nanstd(table1[['b0(°)', 'b1(°)']],axis=1)),axis=0) *u.deg.to(u.rad)*ds
+
+# ---------------------------------------------------------------------------
+
+
 
 
 # ---------------------------------------------------------------------------
@@ -151,24 +167,27 @@ def xyz_2_sph(xyz):  # works for a point
     return l, b, d
 
 
-def get_cloud_info(i, drange='by r'):
-    """Depends on module-level globals: coordses, ds, drs, ednhfr_cm3."""
-    if drange == 'by r':
-        coords = np.concatenate((coordses[i], np.array([ds[i]-drs[i], ds[i]+drs[i]])))
+def get_cloud_info(i, source_array, drange='by r'):
+    """Depends on module-level globals: table1, ds, drs."""
+    lb = table1.iloc[i][['l0(°)', 'l1(°)', 'b0(°)', 'b1(°)']].to_numpy().astype('float')
 
-    if drange == 'full':
-        coords = np.concatenate((coordses[i], np.array([0, 1182])+68))
+    if drange == 'by r':
+        coords = np.concatenate((lb, np.array([ds[i]-drs[i], ds[i]+drs[i]])))
+
+    elif drange == 'full':
+        coords = np.concatenate((lb, np.array([0, 1182])+68))
     else:
-        coords = np.concatenate((coordses[i], np.array([ds[i]-drange, ds[i]+drange])))
+        coords = np.concatenate((lb, np.array([ds[i]-drange, ds[i]+drange])))
 
     coords[4] = max(coords[4], 68)
-    cube = get_subcube(ednhfr_cm3, coords)
+    
+    cube = get_subcube(source_array, coords)
 
     return cube, coords
 
 
-def get_99th_percs(i, drange='by r', which='99', db=0.23, dl=-0.23):
-    cube, coords = get_cloud_info(i, drange)
+def get_99th_percs(i, source_array, drange='by r', which='99', db=0.23, dl=-0.23):
+    cube, coords = get_cloud_info(i, source_array, drange)
 
     l0, b0, d0 = coords[[0, 2, 4]]
     ds_, bs, ls = np.indices(cube.shape).reshape(3, -1) * np.array([1, db, dl])[:, None] + np.array([d0, b0, l0])[:, None]
@@ -228,10 +247,8 @@ def L1ds(p1, p2, pixels):
     return L1_d, np.concatenate((pixels, dperps[:, np.newaxis]), axis=1)
 
 
-def pick_best_line(i, drange, n_iter):
-    """NOTE: source notebook never returns from this function (falls off the
-    end after sorting `df`); dmin/p1/p2 are computed but not returned."""
-    dats = get_99th_percs(i, drange, which='both')
+def pick_best_line(i, source_array, drange, n_iter):
+    dats = get_99th_percs(i, source_array, drange, which='both')
 
     df = pd.DataFrame(columns=['d', 'x1', 'y1', 'z1', 'x2', 'y2', 'z2'])
 
@@ -252,14 +269,15 @@ def pick_best_line(i, drange, n_iter):
     p1 = df.iloc[0][['x1', 'y1', 'z1']].to_numpy()
     p2 = df.iloc[0][['x2', 'y2', 'z2']].to_numpy()
 
+    return p1,p2,dmin
 
-def get_spine(i, drange='by r', n_iter=5):
+def get_spine(i, source_array, drange='by r', n_iter=5):
     """NOTE: source notebook's `return np.around(pt_lbd,2),n` references `n`,
     which is not defined in this function's scope (likely a bug -- `n` looks
     like a leftover from `pick_best_line`'s loop variable)."""
-    dats = get_99th_percs(i, drange, which='both')
+    dats = get_99th_percs(i, source_array, drange, which='both')
 
-    p1_xyz, p2_xyz, dmin = pick_best_line(i, drange, n_iter)
+    p1_xyz, p2_xyz, dmin = pick_best_line(i, source_array, drange, n_iter)
 
     L1d, all_dat = L1ds(p1_xyz, p2_xyz, dats[1].to_numpy())
 
@@ -273,14 +291,14 @@ def get_spine(i, drange='by r', n_iter=5):
 
     pt_lbd, vec_lbd = pts2line(p1_lbd, p2_lbd)
 
-    return np.around(pt_lbd, 2), n
+    return np.around(pt_lbd, 2), np.around(vec_lbd,2),cube3,L1d 
 
 
-def input_spine(i, sp_type='lbd'):
+def input_spine(i, source_array, sp_type='lbd'):
     """NOTE: source notebook never returns from this function; depends on
     module-level global `spines`."""
     p1, p2 = spines[i]
-    dats = get_99th_percs(i, which='both')
+    dats = get_99th_percs(i, source_array, which='both')
 
     if sp_type == 'lbd':
         p1_lbd = np.array(p1)
@@ -301,12 +319,12 @@ def input_spine(i, sp_type='lbd'):
     cube2 = coords_to_cube(all_df[['d', 'b', 'l']].to_numpy(), all_df['dperp'])
 
 
-def ha(i, drange, n='none'):
-    cube, coords = get_cloud_info(i, drange)
+def ha(i, source_array, drange, n='none'):
+    cube, coords = get_cloud_info(i, source_array, drange)
     if type(n) != str:
         cube = cube*(cube > n)
 
-    pta, veca, cuba, L1da = get_spine(i, drange)
+    pta, veca, cuba, L1da = get_spine(i, source_array, drange)
 
     return {'coords': coords, 'dust_cube': cube, 'dist_cube': cuba, 'spine': [pta, veca]}
 
@@ -431,13 +449,13 @@ def plot_densty_vsr(ax, dperp, densty, rbins, ylbl, ttl, lbl, color='red'):
     return df['d'].to_numpy(), df['rho'].to_numpy()
 
 
-def check_thres(i, r, thresh):
-    cube, coords = get_cloud_info(i, r)
+def check_thres(i, source_array, r, thresh):
+    cube, coords = get_cloud_info(i, source_array, r)
 
-    full_cube = get_cloud_info(i, 'full')[0]
+    full_cube = get_cloud_info(i, source_array, 'full')[0]
     fullc_Av = ((np.nansum(full_cube*u.cm**-3, axis=0)*u.pc).cgs/(2.2e21*u.cm**-2)).value
 
-    pta, veca, cuba, L1da = get_spine(i, r)
+    pta, veca, cuba, L1da = get_spine(i, source_array, r)
 
     p1a_xyz, p2a_xyz = line2pts(pta, veca)
     p1a_lbd = np.array(xyz_2_sph(p1a_xyz))
@@ -445,7 +463,7 @@ def check_thres(i, r, thresh):
 
     pta_lbd, veca_lbd = pts2line(p1a_lbd, p2a_lbd)
 
-    df = get_99th_percs(i)
+    df = get_99th_percs(i, source_array)
 
     masked = cube * (cube > thresh)
 
@@ -455,10 +473,10 @@ def check_thres(i, r, thresh):
     plt.show()
 
 
-def histogram(i, drange='by r', cmapping='sane'):
-    cloud_dict = ha(i, drange)
+def histogram(i, source_array, drange='by r', cmapping='sane'):
+    cloud_dict = ha(i, source_array, drange)
 
-    full_cube = get_cloud_info(i, 'full')[0]
+    full_cube = get_cloud_info(i, source_array, 'full')[0]
     fullc_Av = ((np.nansum(full_cube*u.cm**-3, axis=0)*u.pc).cgs/(2.2e21*u.cm**-2)).value
 
     fig, axs = plt.subplots(1, 2, figsize=(10, 5))
@@ -482,7 +500,7 @@ def histogram(i, drange='by r', cmapping='sane'):
     plt.show()
 
 
-def rho_radial_profiles(i, drange='by r', cmapping='sane', plt_='new', color='black', lbl='by r'):
+def rho_radial_profiles(i, source_array, drange='by r', cmapping='sane', plt_='new', color='black', lbl='by r'):
     """NOTE: source notebook never returns from this function (falls off the
     end after the curve_fit call); depends on module-level globals ds, drs.
     Callers elsewhere in the notebook unpack this as `ax, err_sum = ...`,
@@ -490,7 +508,7 @@ def rho_radial_profiles(i, drange='by r', cmapping='sane', plt_='new', color='bl
     if lbl == 'by r':
         lbl = f'r={round(drs[i], 2)}'
 
-    cloud_dict = ha(i, drange)
+    cloud_dict = ha(i, source_array, drange)
 
     rmax = np.nanmax(cloud_dict['dist_cube'])
     px_scl = np.log10(2*0.125*u.deg.to(u.rad)*ds[i])
@@ -503,10 +521,10 @@ def rho_radial_profiles(i, drange='by r', cmapping='sane', plt_='new', color='bl
     rho0, r0, alpha = np.around((curve_fit(eq1_if, df['d'], df['rho'], p0=[10, 10, 3], maxfev=5000))[0], 2)
 
 
-def Sig_radial_profiles(i, drange='by r', cmapping='sane', plt_='new', color='black'):
+def Sig_radial_profiles(i, source_array, drange='by r', cmapping='sane', plt_='new', color='black'):
     """NOTE: source notebook never returns from this function; depends on
     module-level global `names`."""
-    cloud_dict = ha(i, drange)
+    cloud_dict = ha(i, source_array, drange)
 
     rbins = 10**np.arange(-0.5, 2, 0.1)
 
@@ -519,8 +537,8 @@ def Sig_radial_profiles(i, drange='by r', cmapping='sane', plt_='new', color='bl
         fig.suptitle(names[i])
 
 
-def make_Av_isosurface(i, r='by r'):
-    dict_ = ha(i, r)
+def make_Av_isosurface(i, source_array, r='by r'):
+    dict_ = ha(i, source_array, r)
 
     Av0 = ((np.nansum(dict_['dust_cube']*u.cm**-3, axis=0)*u.pc).cgs/(2.2e21*u.cm**-2)).value
     Av1 = ((np.nansum(dict_['dust_cube']*u.cm**-3, axis=1)*u.pc).cgs/(2.2e21*u.cm**-2)).value
