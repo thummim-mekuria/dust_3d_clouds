@@ -1,16 +1,4 @@
-"""
-Functions extracted from 21_serious_time.ipynb.
 
-table1/ds/drs/names are loaded at module level below. The dust cube is passed
-in explicitly as `source_array` rather than read from a global.
-
-`spines` is still an unresolved module-level global -- `input_spine` needs it
-and nothing here defines it.
-
-`eq2_if` below is a leftover from 17_.ipynb, has no counterpart in
-21_serious_time.ipynb, and was syntactically incomplete where it came from,
-so it stays commented out.
-"""
 
 import numpy as np
 import pandas as pd
@@ -45,7 +33,9 @@ drs = np.nanmax((np.nanstd(table1[['l0(°)', 'l1(°)']],axis=1),
 
 # ---------------------------------------------------------------------------
 
-
+plt.rcParams['font.family'] = 'STIXGeneral'
+plt.rcParams['font.size']   = 15
+plt.rcParams['mathtext.fontset'] = 'stix'
 
 
 # ---------------------------------------------------------------------------
@@ -125,6 +115,13 @@ def dperp_pt_line(p0s, p1, p2):
     return num/den
 
 
+def dparl_pt_line(p0s, p1, p2):
+    # Signed scalar projection onto the spine: negative behind p1.
+    num = np.sum((p1[np.newaxis, :]-p0s)*(p2-p1), axis=-1)
+    den = np.linalg.norm(p2-p1)
+    return -num/den
+
+
 def coords_to_cube(coords, vals):
     zs = np.unique(coords[:, 0])
     ys = np.unique(coords[:, 1])
@@ -168,7 +165,7 @@ def xyz_2_sph(xyz):  # works for a point
 
 
 def get_cloud_info(i, source_array, drange='by r'):
-    """Depends on module-level globals: table1, ds, drs."""
+    # Depends on module-level globals: table1, ds, drs.
     lb = table1.iloc[i][['l0(°)', 'l1(°)', 'b0(°)', 'b1(°)']].to_numpy().astype('float')
 
     if drange == 'by r':
@@ -209,13 +206,16 @@ def get_99th_percs(i, source_array, drange='by r', which='99', db=0.23, dl=-0.23
         return df.to_numpy()
 
 
-def pick_p1p2(coords99):
+def pick_p1p2(coords99, rng=np.random):
+    # rng defaults to the global numpy RNG (unchanged behavior). Pass a
+    # np.random.RandomState so parallel workers draw independent, reproducible
+    # point pairs instead of sharing/duplicating global RNG state.
     xyz = coords99[:, 0:3]
 
     N = len(xyz)
-    i1, i2 = np.random.randint(N, size=2)
+    i1, i2 = rng.randint(N, size=2)
     while i1 == i2:  # picking the same point
-        i2 = np.random.randint(N)
+        i2 = rng.randint(N)
 
     p1 = xyz[i1]
     p2 = xyz[i2]
@@ -242,27 +242,43 @@ def L1ds(p1, p2, pixels):
     xyz = pixels[:, 0:3]
 
     dperps = dperp_pt_line(xyz, p1, p2)
+    dparls = dparl_pt_line(xyz, p1, p2)
+
     L1_d = np.nansum(dperps*Avs)/np.nansum(Avs)
 
-    return L1_d, np.concatenate((pixels, dperps[:, np.newaxis]), axis=1)
+    return L1_d, np.concatenate((pixels, dperps[:, np.newaxis], dparls[:, np.newaxis]), axis=1)
 
 
-def pick_best_line(i, source_array, drange, n_iter):
+def _fit_one_line(dats_arr, seed):
+    # One Monte-Carlo spine fit: random point pair -> L1-minimized line.
+    # Pure function of (dats_arr, seed) so it can run in a parallel worker.
+    rng = np.random.RandomState(seed)
+    p1, p2 = pick_p1p2(dats_arr, rng)
+
+    ps_min = minimize(L1ds_minimizable, np.concatenate([p1, p2]), args=dats_arr)
+
+    p1_ = ps_min.x[0:3]
+    p2_ = ps_min.x[3:6]
+
+    L1d_min, _ = L1ds(p1_, p2_, dats_arr)
+
+    return [L1d_min, p1_[0], p1_[1], p1_[2], p2_[0], p2_[1], p2_[2]]
+
+
+def pick_best_line(i, source_array, drange, n_iter, n_jobs=1):
+    # Each iteration is an independent random-line fit. n_jobs=1 keeps the original
+    # serial behavior; n_jobs=-1 uses all cores, or pass a positive int. Seeds are
+    # 0..n_iter-1 so results are reproducible regardless of n_jobs.
     dats = get_99th_percs(i, source_array, drange, which='both')
+    dats_arr = dats[0].to_numpy()
 
-    df = pd.DataFrame(columns=['d', 'x1', 'y1', 'z1', 'x2', 'y2', 'z2'])
+    if n_jobs == 1:
+        rows = [_fit_one_line(dats_arr, seed) for seed in range(n_iter)]
+    else:
+        rows = Parallel(n_jobs=n_jobs)(
+            delayed(_fit_one_line)(dats_arr, seed) for seed in range(n_iter))
 
-    for n in range(n_iter):
-        p1, p2 = pick_p1p2(dats[0].to_numpy())
-
-        ps_min = minimize(L1ds_minimizable, np.concatenate([p1, p2]), args=dats[0].to_numpy())
-
-        p1_ = ps_min.x[0:3]
-        p2_ = ps_min.x[3:6]
-
-        L1d_min, all_ds = L1ds(p1_, p2_, dats[0].to_numpy())
-
-        df.loc[len(df)] = [L1d_min, p1_[0], p1_[1], p1_[2], p2_[0], p2_[1], p2_[2]]
+    df = pd.DataFrame(rows, columns=['d', 'x1', 'y1', 'z1', 'x2', 'y2', 'z2'])
 
     df = df.sort_values('d')
     dmin = df.iloc[0]['d']
@@ -271,32 +287,35 @@ def pick_best_line(i, source_array, drange, n_iter):
 
     return p1,p2,dmin
 
-def get_spine(i, source_array, drange='by r', n_iter=5):
-    """NOTE: source notebook's `return np.around(pt_lbd,2),n` references `n`,
-    which is not defined in this function's scope (likely a bug -- `n` looks
-    like a leftover from `pick_best_line`'s loop variable)."""
+def get_spine(i, source_array, drange='by r', n_iter=5, n_jobs=1):
+    # Source notebook returned `np.around(pt_lbd,2),n` -- `n` is undefined here,
+    # likely a leftover from pick_best_line's loop variable.
     dats = get_99th_percs(i, source_array, drange, which='both')
 
-    p1_xyz, p2_xyz, dmin = pick_best_line(i, source_array, drange, n_iter)
+    p1_xyz, p2_xyz, dmin = pick_best_line(i, source_array, drange, n_iter, n_jobs=n_jobs)
+
+    # pt_, vec_ = pts2line(p1_xyz,p2_xyz) #increase the distance between the two points 
+    # p1_xyz, p2_xyz = line2pts(pt_,vec_,10)
 
     L1d, all_dat = L1ds(p1_xyz, p2_xyz, dats[1].to_numpy())
 
-    all_df = pd.DataFrame(all_dat, columns=['x', 'y', 'z', 'd', 'b', 'l', 'n', 'dperp'])
-    cube2 = coords_to_cube(all_df[['d', 'b', 'l']].to_numpy(), all_df['dperp'])
+    all_df = pd.DataFrame(all_dat, columns=['x', 'y', 'z', 'd', 'b', 'l', 'n', 'dperp', 'dparl'])
+    cube2  = coords_to_cube(all_df[['d', 'b', 'l']].to_numpy(), all_df['dperp'])
+    cube22 = coords_to_cube(all_df[['d', 'b', 'l']].to_numpy(), all_df['dparl'])
 
-    cube3 = np.flip(cube2.transpose(), axis=2)  # reorients to look like cube
+    cube3  = np.flip(cube2.transpose(), axis=2)  # reorients to look like cube
+    cube33 = np.flip(cube22.transpose(), axis=2)
 
     p1_lbd = np.array(xyz_2_sph(p1_xyz))
     p2_lbd = np.array(xyz_2_sph(p2_xyz))
 
     pt_lbd, vec_lbd = pts2line(p1_lbd, p2_lbd)
 
-    return np.around(pt_lbd, 2), np.around(vec_lbd,2),cube3,L1d 
+    return np.around(pt_lbd, 2), np.around(vec_lbd, 2), cube3, cube33, L1d
 
 
 def input_spine(i, source_array, sp_type='lbd'):
-    """NOTE: source notebook never returns from this function; depends on
-    module-level global `spines`."""
+    # Never returns anything -- as in the source notebook. Depends on global `spines`.
     p1, p2 = spines[i]
     dats = get_99th_percs(i, source_array, which='both')
 
@@ -315,18 +334,23 @@ def input_spine(i, source_array, sp_type='lbd'):
 
     L1d, alldat = L1ds(p1_xyz, p2_xyz, dats[1].to_numpy())
 
-    all_df = pd.DataFrame(alldat, columns=['x', 'y', 'z', 'd', 'b', 'l', 'A', 'dperp'])
+    all_df = pd.DataFrame(alldat, columns=['x', 'y', 'z', 'd', 'b', 'l', 'A', 'dperp', 'dparl'])
     cube2 = coords_to_cube(all_df[['d', 'b', 'l']].to_numpy(), all_df['dperp'])
 
 
-def ha(i, source_array, drange, n='none'):
+def ha(i, source_array, drange, n='none', n_jobs=1):
+    # `b_perp` and `dist_cube` are the same array; `dist_cube` is kept because
+    # histogram, Sig_radial_profiles, make_Av_isosurface and
+    # rho_radial_profiles still read it under that name.
+    # n_jobs is forwarded to the Monte-Carlo spine fit (see pick_best_line).
     cube, coords = get_cloud_info(i, source_array, drange)
     if type(n) != str:
         cube = cube*(cube > n)
 
-    pta, veca, cuba, L1da = get_spine(i, source_array, drange)
+    pta, veca, dperp, dparl, L1da = get_spine(i, source_array, drange, n_jobs=n_jobs)
 
-    return {'coords': coords, 'dust_cube': cube, 'dist_cube': cuba, 'spine': [pta, veca]}
+    return {'coords': coords, 'dust_cube': cube,'b_perp': dperp, 'b_parl': dparl,
+            'spine': [pta, veca]}
 
 
 # ---------------------------------------------------------------------------
@@ -358,17 +382,19 @@ def plot_99th_perc_pts(axs, df):
 
 
 def plot_spine(axs, spine, scolor='cyan'):
+    lbax, bdax, ldax, _ = axs.flat 
     pt, vect = spine
 
-    kws = {'color': scolor, 'pivot': 'mid', 'scale': 4,
-           'angles': 'xy', 'width': 3e-2, 'alpha': 0.7, 'headwidth': 0.}
+    kws = {'color': scolor, 'pivot': 'mid', 'scale': 1,
+           'angles': 'xy', 'width': 2e-2, 'alpha': 0.7, 'headwidth': 0.}
 
-    axs[0].quiver(pt[0], pt[1], vect[0], vect[1], **kws)
-    axs[1].quiver(pt[0], pt[2], vect[0], vect[2], **kws)
-    axs[2].quiver(pt[1], pt[2], vect[1], vect[2], **kws)
+    lbax.quiver(pt[0], pt[1], vect[0], vect[1], **kws)
+    ldax.quiver(pt[0], pt[2], vect[0], vect[2], **kws)
+    bdax.quiver(pt[2], pt[1], vect[2], vect[1], **kws)
 
 
-def plot_moment_maps(cube, coords, which, unit='Av', scolor='cyan'):
+def plot_moment_maps(cube, coords, which, unit='Av', scolor='cyan',
+                     b_perp=None, b_parl=None):
     if unit == 'Av':
         im0 = ((np.nansum(cube*u.cm**-3, axis=0)*u.pc).cgs/(2.2e21*u.cm**-2)).value
         im1 = ((np.nansum(cube*u.cm**-3, axis=1)*u.pc).cgs/(2.2e21*u.cm**-2)).value
@@ -386,33 +412,54 @@ def plot_moment_maps(cube, coords, which, unit='Av', scolor='cyan'):
         cmin = 1
         cmax = 20
 
-    fig, axs = plt.subplots(1, 3, dpi=200, figsize=(15, 5))
+    fig, axs = plt.subplots(2, 2, dpi=200, figsize=(10, 10))#,sharey='row',sharex='col')
 
     cmp = 'binary'
 
     kws = {'levels': 40, 'cmap': cmp, 'extend': 'max', 'norm': 'log'}
     kws2 = {'levels': lvls, 'colors': 'white', 'linewidths': 0.75,
             'linestyles': ['solid', '--', ':', 'solid']}
+    
+    lbax, bdax, ldax, ax0 = axs.flat
 
-    axs[0].contourf(im0, extent=coords[:4], **kws)
-    axs[0].contour(im0, extent=coords[:4], **kws2)
+    lbax.contourf(im0, extent=coords[:4], **kws)
+    lbax.contour(im0, extent=coords[:4], **kws2)
 
-    axs[1].contourf(im1, extent=coords[[0, 1, 4, 5]], **kws)
-    axs[1].contour(im1, extent=coords[[0, 1, 4, 5]], **kws2)
+    ldax.contourf(im1, extent=coords[[0, 1, 4, 5]], **kws)
+    ldax.contour(im1, extent=coords[[0, 1, 4, 5]], **kws2)
 
-    axs[2].contourf(im2, extent=coords[2:], **kws)
-    axs[2].contour(im2, extent=coords[2:], **kws2)
+    bdax.contourf(im2.transpose(), extent=coords[[4,5,2,3]], **kws)
+    bdax.contour(im2.transpose(), extent=coords[[4,5,2,3]], **kws2)
 
-    for ax in axs[:2]:
+    for arr, ls in [(b_perp, 'solid'), (b_parl, '--')]:
+        if arr is None:
+            continue
+
+        kws3 = {'levels': 6, 'colors': 'black', 'linewidths': 1.2,
+                'linestyles': ls}
+
+        css = [lbax.contour(np.nanmin(arr, axis=0),
+                            extent=coords[:4], **kws3),
+               ldax.contour(np.nanmin(arr, axis=1),
+                            extent=coords[[0, 1, 4, 5]], **kws3),
+               bdax.contour(np.nanmin(arr, axis=2).transpose(),
+                            extent=coords[[4, 5, 2, 3]], **kws3)]
+
+        for cs in css:
+            for lbl in plt.clabel(cs, inline=True, fontsize=10, fmt='%.0f'):
+                lbl.set_rotation(0)
+
+    for ax in [lbax,ldax]:
         ax.set_xlim(coords[:2])
 
-    axs[0].set_ylim(coords[2:4])
-    axs[2].set_xlim(coords[2:4])
+    lbax.set_ylim(coords[2:4])
+    ldax.set_ylim(coords[4:])
 
-    for ax in axs[1:]:
-        ax.set_ylim(coords[4:])
+    bdax.set_xlim(coords[4:])
+    bdax.set_ylim(coords[2:4])
 
-    axs[0].set_aspect(1)
+    # lbax.set_aspect(1)
+    ax0.axis('off') 
 
     fig.suptitle(which)
 
@@ -433,7 +480,7 @@ def plot_contour(axs, cube, coords, val, clr):
 
 
 def plot_densty_vsr(ax, dperp, densty, rbins, ylbl, ttl, lbl, color='red'):
-    """NOTE: references `name`, which is not defined in this function's scope."""
+    # References `name`, which is undefined in this scope -- raises NameError if hit.
     df = bin_by_r(dperp, densty, rbins)
     mins = find_peaks(-df['rho'])
 
@@ -455,7 +502,7 @@ def check_thres(i, source_array, r, thresh):
     full_cube = get_cloud_info(i, source_array, 'full')[0]
     fullc_Av = ((np.nansum(full_cube*u.cm**-3, axis=0)*u.pc).cgs/(2.2e21*u.cm**-2)).value
 
-    pta, veca, cuba, L1da = get_spine(i, source_array, r)
+    pta, veca, dperp, dparl, L1da = get_spine(i, source_array, r)
 
     p1a_xyz, p2a_xyz = line2pts(pta, veca)
     p1a_lbd = np.array(xyz_2_sph(p1a_xyz))
@@ -500,30 +547,164 @@ def histogram(i, source_array, drange='by r', cmapping='sane'):
     plt.show()
 
 
-def rho_radial_profiles(i, source_array, drange='by r', cmapping='sane', plt_='new', color='black', lbl='by r'):
-    """NOTE: source notebook never returns from this function (falls off the
-    end after the curve_fit call); depends on module-level globals ds, drs.
-    Callers elsewhere in the notebook unpack this as `ax, err_sum = ...`,
-    which will fail since nothing is returned."""
+def rho_spinal_profiles(i, source_array, drange='by r', plt_='new', color='black', lbl='by r'):
+    # BROKEN AS PORTED: curve_fit raises "`ydata` must not be empty!". b_parl is a
+    # signed projection in pc, so it spans negative values and the log-spaced rbins
+    # below cannot bin it. Left as-is to match 17_.ipynb cell 44.
     if lbl == 'by r':
         lbl = f'r={round(drs[i], 2)}'
 
     cloud_dict = ha(i, source_array, drange)
 
-    rmax = np.nanmax(cloud_dict['dist_cube'])
+    rmax = np.nanmax(cloud_dict['b_parl'])
     px_scl = np.log10(2*0.125*u.deg.to(u.rad)*ds[i])
     rbins = 10**np.arange(px_scl, np.log10(rmax)+0.2, 0.1)
 
-    msk = 1
-    df = bin_by_r(cloud_dict['dist_cube'], cloud_dict['dust_cube'], rbins)
+    df = bin_by_r(cloud_dict['b_parl'], cloud_dict['dust_cube'], rbins)
     mins = find_peaks(-df['rho'])
 
     rho0, r0, alpha = np.around((curve_fit(eq1_if, df['d'], df['rho'], p0=[10, 10, 3], maxfev=5000))[0], 2)
 
+    # -------------------------------------------------------------------
+
+    if plt_ == 'new':
+        plt.figure()
+        ax = plt.gca()
+    else:
+        ax = plt_
+
+    s = 100
+    ax.scatter(df['d'], df['rho'], color=color, marker='.', label=lbl, s=s)
+    ax.scatter(df['d'].iloc[mins[0]], df['rho'].iloc[mins[0]], color=color, marker='+', s=s)
+    ax.plot(df['d'], eq1_if(df['d'], rho0, r0, alpha), color=color)
+
+    err_sum = np.nansum(np.abs(eq1_if(df['d'], rho0, r0, alpha)-df['rho']))/np.nansum(df['rho'])
+
+    ax.loglog()
+    ax.set_xlabel(r'$d_\parallel\ [pc]$')
+    ax.set_ylabel(r'$n\ (cm^{-3})$')
+    ax.set_xlim(1, rmax+5)
+    ax.set_title(names[i])
+
+    print('rho0', rho0, 'r0', r0, 'alpha', alpha)
+
+    return plt.gca(), [rho0, r0, alpha]
+
+
+def rho_radial_profiles_compute(i, source_array, drange='by r', tube_r='px', n_jobs=1):
+    # Pure compute half of rho_radial_profiles: no matplotlib, returns a picklable
+    # dict, so it can run inside a Parallel(...) over clouds and be plotted later.
+    # n_jobs forwards to the Monte-Carlo spine fit inside ha (see pick_best_line):
+    # pass n_jobs=-1 to fit one cloud across all cores. Leave at 1 when this call
+    # is itself already inside an outer Parallel over clouds, to avoid nesting.
+    # Depends on module-level globals ds, drs.
+    # Only d_perp is fit with eq1_if -- the Plummer-like form has no counterpart
+    # along the spine. d_parl is signed, so each side of the spine is binned on its
+    # own and both are drawn against |d_parl|, solid ahead of p1 and dashed behind.
+    # `tube_r` is the radius in pc of the cylinder the d_parl profiles average
+    # within -- 'px' for the pixel scale, or np.inf for no cut.
+    cloud_dict = ha(i, source_array, drange, n_jobs=n_jobs)
+
+    log_px_scl = np.log10(2*0.125*u.deg.to(u.rad)*ds[i])
+
+    b_perp_bins = 10**np.arange(log_px_scl,
+                          np.log10(np.nanmax(cloud_dict['b_perp']))+0.2, 0.1)
+
+    df = bin_by_r(cloud_dict['b_perp'], cloud_dict['dust_cube'], b_perp_bins)
+    mins = find_peaks(-df['rho'])
+
+    rho0, r0, alpha = np.around((curve_fit(eq1_if, df['d'], df['rho'], p0=[10, 10, 3], maxfev=5000))[0], 2)
+
+    # d_parl is signed about p1, so bin each side of the spine on its own and
+    # plot both against |d_parl| -- one branch per side, per color. Only pixels
+    # inside a tube of radius tube_r about the spine are averaged in; d_perp is
+    # nan off the cloud, and those compare False, so they drop out here too.
+    if tube_r == 'px':
+        tube_r = 3*10**log_px_scl
+
+    tube = np.ravel(cloud_dict['b_perp']) <= tube_r
+    tube_n = np.ravel(cloud_dict['dust_cube'])[tube]
+
+    parl_branches = []
+    for sign, ls in [(1, 'solid'), (-1, '--')]:
+        signed = sign*np.ravel(cloud_dict['b_parl'])[tube]
+        far = np.nanmax(signed)
+        if not np.isfinite(far) or far <= 10**log_px_scl:
+            continue
+        df_t = bin_by_r(signed, tube_n,
+                        10**np.arange(log_px_scl, np.log10(far)+0.2, 0.1))
+        parl_branches.append((df_t, find_peaks(-df_t['rho']), ls, sign))
+
+    return {'i': i, 'df': df, 'mins': mins, 'fit': [rho0, r0, alpha],
+            'parl_branches': parl_branches}
+
+
+def rho_radial_profiles_plot(result, plt_='new', color='black', lbl='by r'):
+    # Drawing half of rho_radial_profiles -- consumes a dict from _compute. Kept
+    # serial (matplotlib is not process-safe). `plt_` is 'new' or an axes array
+    # unpacking into (perp_ax, parl_ax); the returned array feeds back in to overplot.
+    i = result['i']
+    df = result['df']
+    mins = result['mins']
+    rho0, r0, alpha = result['fit']
+    parl_branches = result['parl_branches']
+
+    if lbl == 'by r':
+        lbl = f'r={round(drs[i], 2)}'
+
+    if type(plt_) == str:
+        fig, axs = plt.subplots(1, 2, figsize=(12, 5), constrained_layout=True,sharex=True,sharey=True)
+        fig.suptitle(names[i])
+    else:
+        axs = plt_
+
+    perp_ax, parl_ax = axs.flat
+
+    s = 100
+
+    perp_ax.scatter(df['d'], df['rho'], color=color, marker='.', label=lbl, s=s)
+    perp_ax.scatter(df['d'].iloc[mins[0]], df['rho'].iloc[mins[0]], color=color, marker='+', s=s)
+    perp_ax.plot(df['d'], eq1_if(df['d'], rho0, r0, alpha), color=color)
+
+    err_sum = np.nansum(np.abs(eq1_if(df['d'], rho0, r0, alpha)-df['rho']))/np.nansum(df['rho'])
+
+    perp_ax.loglog()
+    perp_ax.set_xlabel(r'$d_\perp\ [\mathrm{pc}]$')
+    perp_ax.set_ylabel(r'$n\ (cm^{-3})$')
+    # perp_ax.set_xlim(1, np.nanmax(cloud_dict['b_perp'])+5)
+
+
+    for df_t, mins_t, ls, sign in parl_branches:
+        parl_ax.plot(df_t['d'], df_t['rho'], color=color, linestyle=ls, label=lbl if sign > 0 else None)
+        parl_ax.scatter(df_t['d'].iloc[mins_t[0]], df_t['rho'].iloc[mins_t[0]], color=color, marker='+', s=s)
+
+    parl_ax.loglog()
+    parl_ax.set_xlabel(r'$|d_\parallel|\ [\mathrm{pc}]$')
+    parl_ax.set_ylabel(r'$n\ (cm^{-3})$')
+    # parl_ax.set_xlim(1, np.nanmax(cloud_dict['b_parl'])+5)
+
+    parl_ax.set_xlim(1,)
+    parl_ax.set_ylim(1e-1,)
+
+
+    # print('rho0', rho0, 'r0', r0, 'alpha', alpha)
+
+    return axs, [rho0, r0, alpha]
+
+
+def rho_radial_profiles(i, source_array, drange='by r', cmapping='sane', plt_='new', color='black', lbl='by r',
+                        tube_r='px', n_jobs=1):
+    # Backward-compatible wrapper: compute + plot in one call, same signature and
+    # return as before. For parallel runs call rho_radial_profiles_compute across
+    # clouds under a Parallel(...), then rho_radial_profiles_plot on each result.
+    result = rho_radial_profiles_compute(i, source_array, drange, tube_r, n_jobs)
+    return rho_radial_profiles_plot(result, plt_, color, lbl)
+
+
+
 
 def Sig_radial_profiles(i, source_array, drange='by r', cmapping='sane', plt_='new', color='black'):
-    """NOTE: source notebook never returns from this function; depends on
-    module-level global `names`."""
+    # Never returns anything -- as in the source notebook. Depends on global `names`.
     cloud_dict = ha(i, source_array, drange)
 
     rbins = 10**np.arange(-0.5, 2, 0.1)
@@ -537,19 +718,19 @@ def Sig_radial_profiles(i, source_array, drange='by r', cmapping='sane', plt_='n
         fig.suptitle(names[i])
 
 
-def make_Av_isosurface(i, source_array, r='by r'):
-    dict_ = ha(i, source_array, r)
+# def make_Av_isosurface(i, source_array, r='by r'):
+#     dict_ = ha(i, source_array, r)
 
-    Av0 = ((np.nansum(dict_['dust_cube']*u.cm**-3, axis=0)*u.pc).cgs/(2.2e21*u.cm**-2)).value
-    Av1 = ((np.nansum(dict_['dust_cube']*u.cm**-3, axis=1)*u.pc).cgs/(2.2e21*u.cm**-2)).value
-    Av2 = ((np.nansum(dict_['dust_cube']*u.cm**-3, axis=2)*u.pc).cgs/(2.2e21*u.cm**-2)).value
+#     Av0 = ((np.nansum(dict_['dust_cube']*u.cm**-3, axis=0)*u.pc).cgs/(2.2e21*u.cm**-2)).value
+#     Av1 = ((np.nansum(dict_['dust_cube']*u.cm**-3, axis=1)*u.pc).cgs/(2.2e21*u.cm**-2)).value
+#     Av2 = ((np.nansum(dict_['dust_cube']*u.cm**-3, axis=2)*u.pc).cgs/(2.2e21*u.cm**-2)).value
 
-    m0 = np.broadcast_to(Av0 > 1, dict_['dust_cube'].shape)
-    m1 = np.broadcast_to(Av1 > 1, np.array(dict_['dust_cube'].shape)[[1, 0, 2]]).swapaxes(0, 1)
-    m2 = np.broadcast_to(Av2 > 1, np.array(dict_['dust_cube'].shape)[[2, 0, 1]]).swapaxes(0, 2).swapaxes(0, 1)
+#     m0 = np.broadcast_to(Av0 > 1, dict_['dust_cube'].shape)
+#     m1 = np.broadcast_to(Av1 > 1, np.array(dict_['dust_cube'].shape)[[1, 0, 2]]).swapaxes(0, 1)
+#     m2 = np.broadcast_to(Av2 > 1, np.array(dict_['dust_cube'].shape)[[2, 0, 1]]).swapaxes(0, 2).swapaxes(0, 1)
 
-    miso = m0*m1*m2
+#     miso = m0*m1*m2
 
-    capped = miso*dict_['dist_cube']
+#     capped = miso*dict_['dist_cube']
 
-    return miso
+#     return miso
