@@ -16,6 +16,8 @@
 \usepackage{threeparttable}
 \usepackage{xcolor}
 
+\graphicspath{{figures/}}
+
 % ---------------------------------------------------------------------------
 % Figure placeholder: renders a labeled gray box in place of a real figure.
 % Replace \figplaceholder{figN} with \includegraphics[width=\linewidth]{figN}
@@ -55,11 +57,9 @@
 \email{john.forbes@canterbury.ac.nz} 
 \affiliation{School of Physical and Chemical Sciences--Te Kura Mat\=u \\
 University of Canterbury, Christchurch 8140, New Zealand}
-\affiliation{Center for Computational Astrophysics \\
-162 5th Avenue, New York, NY 10010, USA}
 
 \begin{abstract}
-We test a cylindrical model for the large-scale, global 3D structure of molecular clouds with observations of dust-extinction in the Solar Neighborhood. \textcolor{red}{something about: volume density distribution of gas and its relationship to star formation.} We \textcolor{red}{fit the profiles over a range of distance bins and find solutions that fit each of the observed radial surface density profiles remarkably well.} We find that there is a \textcolor{red}{x type of relationship between the central volume density of a cloud $\rho_0$ and the turnover radius $r_0$. additionally, [this] is the relationship with mass. mass is also correlated with depletion time as [relationship], which is <robust to / depends on> some other factor that mass is usually connected to in the models. what are the implications of these results in terms of further developing the physical model. what are the implications of this wrt the field / ie where is it situated.}
+\textcolor{cyan}{Using dust-derived reconstructions of the Solar Neighborhood, we characterize the three-dimensional structure of molecular clouds. After creating a catalog of star-forming regions, . We investigate the profiles over a range of distance bins and find solutions that fit each of the observed radial surface density profiles remarkably well. The turnover radius of a cloud is x-ly correlated with the central volume density of a cloud $\rho_0$ and yly with the other property. Higher mass clouds tend to [have a property related to the sfr]. This effect is <robust to / depends on> some other factor that mass is usually connected to in the models. what are the implications of these results in terms of further developing the physical model. what are the implications of this wrt the field / ie where is it situated.}
 \end{abstract}
 
 \keywords{Molecular clouds (1072) --- Interstellar medium (847) --- Star formation (1569) ---
@@ -98,7 +98,7 @@ distribution of gas that has been projected onto the plane of the sky in surface
 
 \begin{figure}[ht!]
 \centering
-\figplaceholder{fig1}
+\includegraphics[width=\linewidth]{fig1}
 \caption{maps of a molecular cloud (perseus) - orthogonal, with spines overplotted for different distance ranges}
 \label{fig:maps}
 \end{figure}
@@ -173,7 +173,7 @@ Rosette    & 1343 & $(203, 210)$   & $(-4.5, 0)$    & 0.48  \\
 
 \begin{figure*}[ht!]
 \centering
-\figplaceholder{fig2}
+\includegraphics[width=\linewidth]{fig2}
 \caption{rho vs r profiles}
 \label{fig:maps}
 \end{figure*}
@@ -315,7 +315,7 @@ increasing toward $\bperp \to 0$, given the finite resolution of the maps.}
 
 \begin{figure}[ht!]
 \centering
-\figplaceholder{fig3}
+\includegraphics[width=\linewidth]{fig3}
 \caption{Observed radially averaged surface densities (blue circles) as a
 function of $\bperp$. Pink shaded areas (pink lines) show the central 68\%
 confidence interval (median) for the conditional distribution $\Sigma \mid \bperp$
@@ -336,7 +336,7 @@ Arzoumanian2019}.}
 
 \begin{figure}[ht!]
 \centering
-\figplaceholder{fig4}
+\includegraphics[width=\linewidth]{fig4}
 \caption{Results of fitting the explicit cylinder model. Each cloud's median
 posterior values of $\rho_0$, $r_0$, and $\alpha$ are plotted, with error bars
 showing the central 68\% of the marginal distribution of each parameter. Clouds
@@ -368,7 +368,7 @@ correlation in the next section.}
 
 \begin{figure}[ht!]
 \centering
-\figplaceholder{fig5}
+\includegraphics[width=\linewidth]{fig5}
 \caption{The central density of each cloud relative to its mass and depletion
 time. Clouds with higher central densities tend to have lower masses and shorter
 depletion times.}
@@ -398,7 +398,7 @@ envelope.}
 
 \begin{figure}[ht!]
 \centering
-\figplaceholder{fig6}
+\includegraphics[width=\linewidth]{fig6}
 \caption{Inferred density profiles as a function of radial distance. As in
 Figure~\ref{fig:profiles}, the conditional posterior distribution at each radius
 is represented by a line at the median value for each cloud and a shaded region
@@ -458,7 +458,7 @@ mass, though not quite as much as in LLA10.}
 
 \begin{figure*}[ht!]
 \centering
-\figplaceholder{fig7}
+\includegraphics[width=\linewidth]{fig7}
 \caption{The scaling of cloud mass (left panel) and $\ell_{\parallel,\mathrm{max}}$
 and $\bperp{}_{,\mathrm{max}}$ (right panel) with $r_0$. In the right panel, the
 $\bperp{}_{,\mathrm{max}}$ have smaller values and the markers are not filled. Both
@@ -469,7 +469,7 @@ with a logarithmic slope less than 1.}
 
 \begin{figure*}[ht!]
 \centering
-\figplaceholder{fig8}
+\includegraphics[width=\linewidth]{fig8}
 \caption{Depletion time as a function of mass, as defined for material within
 $A_V > 1$~mag (left) and $A_V > 8$~mag (right). Dashed lines in the right panel
 show a factor of $\pm 2$ spread (from the solid line) in dense gas depletion time,
@@ -548,7 +548,7 @@ in this case for our fit to the Orion B molecular cloud.
 
 \begin{figure}[ht!]
 \centering
-\figplaceholder{fig9}
+\includegraphics[width=\linewidth]{fig9}
 \caption{A corner plot for our model fit to the Orion B molecular cloud. The
 histograms on the diagonal show the 1D marginal posterior distributions of the five
 parameters in the model, while the off-diagonal plots show each 2D marginal
