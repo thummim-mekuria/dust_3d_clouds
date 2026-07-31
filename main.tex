@@ -30,27 +30,21 @@
       {\large\color{gray} placeholder figure}
     \end{minipage}}%
 }
-
 % Shorthand for commonly repeated symbols
 \newcommand{\rperp}{r_{\perp}}
 \newcommand{\rparl}{r_{\parallel}}
+% \newcommand{\rhoO}{\rho_0}
+% \newcommand{\rO}{\r_0}
+% \newcommand{RT}{R_\mathrm{T}}
+% \newcommand{tdep}{t_\mathrm{dep}}
+% \newcommand{xhat}{\hat{x}}
+% \newcommand{yhat}{\hat{y}}
+% \newcommand{zhat}{\hat{z}}
+% \newcommand{\cosi}{\cos i}
+% \newcommand{\Msun}{M_\odot}
+% \newcommand{cm3}{\mathrm{cm^{-3}}}
+% \newcommand{deg}{\degee}
 
-\newcommand{\rhoO}{\rho_0}
-\newcommand{\rO}{\r_0}
-\newcommand{\rO}{\r_0}
-
-\newcommand{RT}{R_\mathrm{T}}
-\newcommand{tdep}{t_\mathrm{dep}}
-
-\newcommand{xhat}{\hat{x}}
-\newcommand{yhat}{\hat{y}}
-\newcommand{zhat}{\hat{z}}
-
-\newcommand{\cosi}{\cos i}
-
-\newcommand{\Msun}{M_\odot}
-\newcommand{cm3}{\mathrm{cm^{-3}}}
-\newcommand{deg}{\degee}
 
 \begin{document}
 
@@ -111,86 +105,14 @@ Zhang2019, Schisano2020, Wang2020} there was that one paper about the bones of t
 \textcolor{red}{One of our goals is to tease out information about the volume density
 distribution of gas that has been projected onto the plane of the sky in surface density maps. Rather than trying to capture all of the intricate substructure known to comprise molecular clouds---e.g., filaments, clumps, and cores---our goal is to characterize their large-scale, global structure.}
 
-\begin{figure}[ht!]
+
+\begin{figure*}[ht!]
 \centering
-\figplaceholder{fig1}
+\includegraphics[width=\linewidth]{figures/fig1_catalog.png}
 \caption{maps of a molecular cloud (perseus) - orthogonal, with spines overplotted for different distance ranges}
-\label{fig:maps}
-\end{figure}
+\label{fig1:maps}
+\end{figure*}
 
-\begin{figure}[ht!]
-\centering
-\figplaceholder{fig2}
-\caption{rho vs r profiles}
-\label{fig:maps}
-\end{figure}
-
-
-\begin{figure}[ht!]
-\centering
-\figplaceholder{fig3}
-\caption{Observed radially averaged surface densities (blue circles) as a
-function of $\bperp$. Pink shaded areas (pink lines) show the central 68\%
-confidence interval (median) for the conditional distribution $\Sigma \mid \bperp$
-over a finely sampled range of values for $\bperp$.}
-\label{fig:profiles}
-\end{figure}
-
-\begin{figure}[ht!]
-\centering
-\figplaceholder{fig4}
-\caption{Results of fitting the explicit cylinder model. Each cloud's median
-posterior values of $\rho_0$, $r_0$, and $\alpha$ are plotted, with error bars
-showing the central 68\% of the marginal distribution of each parameter. Clouds
-with higher central densities $\rho_0$ tend to have more compact centers (lower
-$r_0$), but all clouds have $\alpha$ between about 0.5 and 1.}
-\label{fig:params}
-\end{figure}
-
-
-\begin{figure}[ht!]
-\centering
-\figplaceholder{fig5}
-\caption{The central density of each cloud relative to its mass and depletion
-time. Clouds with higher central densities tend to have lower masses and shorter
-depletion times.}
-\label{fig:depletion}
-\end{figure}
-
-\begin{figure}[ht!]
-\centering
-\figplaceholder{fig6}
-\caption{Inferred density profiles as a function of radial distance. As in
-Figure~\ref{fig:profiles}, the conditional posterior distribution at each radius
-is represented by a line at the median value for each cloud and a shaded region
-showing the central 68\% of the distribution. Here we show the distribution of
-$\rho \mid r$ for each cloud. The black dashed line shows
-$\rho_{\mathrm{env}} = 10\,(r/\mathrm{pc})^{-1}\,\Msun\,\mathrm{pc}^{-3}$.}
-\label{fig:rho}
-\end{figure}
-
-\begin{figure}[ht!]
-\centering
-\figplaceholder{fig7}
-\caption{The scaling of cloud mass (left panel) and $\ell_{\parallel,\mathrm{max}}$
-and $\bperp{}_{,\mathrm{max}}$ (right panel) with $r_0$. In the right panel, the
-$\bperp{}_{,\mathrm{max}}$ have smaller values and the markers are not filled. Both
-$\ell_{\parallel,\mathrm{max}}$ and $\bperp{}_{,\mathrm{max}}$ scale with $r_0$ but with a logarithmic slope less than 1.}
-\label{fig:scaling}
-\end{figure}
-
-\begin{figure}[ht!]
-\centering
-\figplaceholder{fig8}
-\caption{Depletion time as a function of mass, as defined for material within
-$A_V > 1$~mag (left) and $A_V > 8$~mag (right). Dashed lines in the right panel
-show a factor of $\pm 2$ spread (from the solid line) in dense gas depletion time,
-comparable to the extremes of the \citet{Lada2010} result. While we reproduce the
-LLA10 result that spread in depletion times becomes smaller when focusing on gas
-in high-extinction regions, we do see a trend in both panels that higher-mass
-clouds have longer depletion times.}
-\label{fig:massdep}
-\end{figure}
 
 \textcolor{red}{Figure~\ref{fig:model} shows a labeled illustration of our model. We call the
 length of a cloud $L$. In surface density maps of clouds like the Orion Molecular Clouds and the Perseus Molecular Cloud, one can often see that much of the highest
@@ -282,6 +204,81 @@ axis.}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% OBSERVATIONS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{methods}\label{sec:obs}
 \subsection{defining the three-dimensional cloud boundary}
+
+
+\begin{figure}[ht!]
+\centering
+\figplaceholder{fig2}
+\caption{rho vs r profiles}
+\label{fig:maps}
+\end{figure}
+
+
+\begin{figure}[ht!]
+\centering
+\figplaceholder{fig3}
+\caption{Observed radially averaged surface densities (blue circles) as a
+function of $\bperp$. Pink shaded areas (pink lines) show the central 68\%
+confidence interval (median) for the conditional distribution $\Sigma \mid \bperp$
+over a finely sampled range of values for $\bperp$.}
+\label{fig:profiles}
+\end{figure}
+
+\begin{figure}[ht!]
+\centering
+\figplaceholder{fig4}
+\caption{Results of fitting the explicit cylinder model. Each cloud's median
+posterior values of $\rho_0$, $r_0$, and $\alpha$ are plotted, with error bars
+showing the central 68\% of the marginal distribution of each parameter. Clouds
+with higher central densities $\rho_0$ tend to have more compact centers (lower
+$r_0$), but all clouds have $\alpha$ between about 0.5 and 1.}
+\label{fig:params}
+\end{figure}
+
+
+\begin{figure}[ht!]
+\centering
+\figplaceholder{fig5}
+\caption{The central density of each cloud relative to its mass and depletion
+time. Clouds with higher central densities tend to have lower masses and shorter
+depletion times.}
+\label{fig:depletion}
+\end{figure}
+
+\begin{figure}[ht!]
+\centering
+\figplaceholder{fig6}
+\caption{Inferred density profiles as a function of radial distance. As in
+Figure~\ref{fig:profiles}, the conditional posterior distribution at each radius
+is represented by a line at the median value for each cloud and a shaded region
+showing the central 68\% of the distribution. Here we show the distribution of
+$\rho \mid r$ for each cloud. The black dashed line shows
+$\rho_{\mathrm{env}} = 10\,(r/\mathrm{pc})^{-1}\,\Msun\,\mathrm{pc}^{-3}$.}
+\label{fig:rho}
+\end{figure}
+
+\begin{figure}[ht!]
+\centering
+\figplaceholder{fig7}
+\caption{The scaling of cloud mass (left panel) and $\ell_{\parallel,\mathrm{max}}$
+and $\bperp{}_{,\mathrm{max}}$ (right panel) with $r_0$. In the right panel, the
+$\bperp{}_{,\mathrm{max}}$ have smaller values and the markers are not filled. Both
+$\ell_{\parallel,\mathrm{max}}$ and $\bperp{}_{,\mathrm{max}}$ scale with $r_0$ but with a logarithmic slope less than 1.}
+\label{fig:scaling}
+\end{figure}
+
+\begin{figure}[ht!]
+\centering
+\figplaceholder{fig8}
+\caption{Depletion time as a function of mass, as defined for material within
+$A_V > 1$~mag (left) and $A_V > 8$~mag (right). Dashed lines in the right panel
+show a factor of $\pm 2$ spread (from the solid line) in dense gas depletion time,
+comparable to the extremes of the \citet{Lada2010} result. While we reproduce the
+LLA10 result that spread in depletion times becomes smaller when focusing on gas
+in high-extinction regions, we do see a trend in both panels that higher-mass
+clouds have longer depletion times.}
+\label{fig:massdep}
+\end{figure}
 
 \textcolor{cyan}{the latitude and longitude bounds of each cloud are used as a guide for where to find the clouds in the edenhofer map. the distances calculated by (zucker? thavisha?) are used as a guide for where to locate the clouds along the line of sight. (x amount of the time, ) the extinction peak at $d_{cloud}$ was the most significant feature along the line of sight, while the remaining () of the time, there were (number or larger) of distinct clouds. is there a correlation between the number of line-of-sight peaks and total integrated mass along the aperture}
 
