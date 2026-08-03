@@ -99,11 +99,20 @@ Zhang2019, Schisano2020, Wang2020} there was that one paper about the bones of t
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% THE MODEL %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Background}\label{sec:model}
 \subsection{the model}
+\textcolor{cyan}{first background on how extinction is used to infer the dust column density - nicest + other methods}.
 
-\textcolor{red}{\textcolor{cyan}{talk about Zucker paper where they identify spines} Surface density maps of Galactic molecular clouds show that they often have elongated shapes, with much of their high-column-density gas concentrated along a central axis. For such clouds, one might reasonably assume---as we do here---that this elongated appearance is because their 3D morphology is cylindrical. Some computer simulations show that structures appearing to be filamentary/cylindrical are sometimes more flattened, sheet-like structures viewed in projection \citep[e.g.,][]{Imara2021}. Recent observational work by \citet{Tritsis2022} and \citet{Rezaei2023} to infer the volume density structure of molecular clouds using dust maps supports this view. In this study, we model molecular clouds as cylinders and choose a sample of clouds that appear to approximate this morphology. We will consider other geometries in future work.}
+% Some computer simulations show that structures appearing to be filamentary/cylindrical are sometimes more flattened, sheet-like structures viewed in projection \citep[e.g.,][]{Imara2021}. Recent observational work by \citet{Tritsis2022} and \citet{Rezaei2023} to infer the volume density structure of molecular clouds using dust maps supports this view. 
 
-\textcolor{red}{One of our goals is to tease out information about the volume density
-distribution of gas that has been projected onto the plane of the sky in surface density maps. Rather than trying to capture all of the intricate substructure known to comprise molecular clouds---e.g., filaments, clumps, and cores---our goal is to characterize their large-scale, global structure.}
+
+\textcolor{cyan}{surface density maps from observations of molecular clouds tend to reveal filamentary elongated structures with the highest-column density gas concentrated along a central ridge or spine. \citet{ImaraForbes_2023} model this global structure as a cylinder with a volume density distribution that goes as 
+\begin{align}\label{eq:rho}
+\textcolor{green}{\rho = \frac{\rho_0}{\left[1 + \left(\dfrac{r}{r_0}\right)^2\right]^{\alpha}}},
+\end{align}
+where $\rho_0$ is the peak density along the central spine of the cloud, $r_0$ is the ``turnover'' radius and $\alpha$ describes how quickly the density falls off beyond $r_0$}
+
+\textcolor{cyan}{By fitting the surface density maps (using MCMC) \citet{ImaraForbes_2023} derive the spine parameters $\alpha$, $\rho_0$, and $r_0$ for the clouds in their sample. they find that clouds that have higher central densities tend to be compact (smaller turnover radii), but the fall-off index is insensitive to both r0 and rho0. \citet{ImaraForbes_2023} also found that (relationships with mass and tdep), implying that the  molecular clouds with () are further along in their evolution than }
+
+\textcolor{cyan}{tension between volume density derived sfr/tdep vs from yso counts- this implies that (need to directly probe three--dimensional structure). overview of the different 3D maps available - leike, edenhofer, dharmwardena, wang.}
 
 
 \begin{figure*}[ht!]
@@ -113,41 +122,6 @@ distribution of gas that has been projected onto the plane of the sky in surface
 \label{fig1:maps}
 \end{figure*}
 
-
-\textcolor{red}{Figure~\ref{fig:model} shows a labeled illustration of our model. We call the
-length of a cloud $L$. In surface density maps of clouds like the Orion Molecular Clouds and the Perseus Molecular Cloud, one can often see that much of the highest
-column-density gas is concentrated along a central axis
-\citep[e.g.,][]{Lombardi2010, Lombardi2011, Imara2016}, which we will refer to here as the \emph{spine}. The perpendicular distance from the spine to any point
-is $r$, and the maximum radius $R_T$ is the distance from the spine to the edge.}
-
-\textcolor{orange}{We define the radial volume density profile of a cloud, $\rho(r)$, as
-\begin{align}\label{eq:rho}
-\rho = \frac{\rho_0}{\left[1 + \left(\dfrac{r}{r_0}\right)^2\right]^{\alpha}},
-\end{align}
-where $\rho_0$ is the peak density along the central spine of the cloud, and
-$r_0$ is the ``turnover'' radius inside of which the density is roughly constant,
-i.e., $\rho \approx \rho_0$. The exponent $\alpha$ describes how quickly the
-density falls off beyond $r_0$. Going forward, we refer to the volume density
-profile simply as $\rho$ and consider the radial dependence to be implied.}
-
-\textcolor{orange}{The expression for an isothermal cylinder, in which $\alpha = 2$, was derived by
-\citet{Stodolkiewicz1963} and \citet{Ostriker1964}:
-$\rho_{\mathrm{iso}} = \rho_0[1 + r^2/8r_0^2]^{-2}$. In this instance, the scaling
-radius, $r_0$, is equivalent to the Jeans length,
-$r_0 = \sqrt{c_s^2 / 4\pi G \rho_0}$, where $c_s$ is the isothermal sound speed.
-Clouds with the $\alpha = 2$ profile would have a steeply declining density of
-$\rho \propto r^{-4}$ far from the central axis. In observed cylindrical clouds,
-however, the density appears to fall off more moderately
-\citep[e.g.,][]{Fiege2000, Arzoumanian2011, Toci2015}. In our model, we leave
-$\alpha$, $\rho_0$, and $r_0$ as free parameters.
- We note that any variation of
-$\rho_0(L)$, which is the density along the spine, is averaged out in the data
-(see Equation~\ref{eq:sigmai}), so there is no reason to include it in the model.
-Moreover, for simplicity, we assume that $r_0$ does not vary along the symmetry
-axis. When we apply Equations~(\ref{eq:rho}) and (\ref{eq:sigmamodel}) to the
-data, we are therefore fitting for $\rho_0\cosi$ rather than $\rho_0$ itself,
-where $i$ is the angle between the plane of the sky and the cylinder's symmetry
-axis.}
 
 \subsection{data\label{sec:obs}}
 \textcolor{cyan}{Gaia photometry and parallaxes make it possible to map the line-of-sight extinction due to dust with high angular resolution (down to 0.11 degree). These have various sky and distance coverages (out to x kpc) which make them suitable for () analyses. of the available dust maps, the edenhofer map matches the requirements of the science}
@@ -213,14 +187,18 @@ axis.}
 \label{fig:maps}
 \end{figure}
 
+\begin{figure*}[ht!]
+\centering
+\includegraphics[width=\linewidth]{figures/fig2.png}
+\caption{projected maps of a molecular cloud (perseus), with spines overplotted for 50,100, and 200 pc distance ranges}
+\label{fig1:maps}
+\end{figure*}
+
 
 \begin{figure}[ht!]
 \centering
-\figplaceholder{fig3}
-\caption{Observed radially averaged surface densities (blue circles) as a
-function of $\bperp$. Pink shaded areas (pink lines) show the central 68\%
-confidence interval (median) for the conditional distribution $\Sigma \mid \bperp$
-over a finely sampled range of values for $\bperp$.}
+\includegraphics[width=\linewidth]{figures/fig3.png}
+\caption{volume density profile along the spine (left) and as a function of perpendicular distance from the spine (right)}
 \label{fig:profiles}
 \end{figure}
 
@@ -451,15 +429,14 @@ $\rho_0\cosi$, $r_0$, and $\alpha$. what is the relationship between $rho0$ and 
 other estimates of filamentary density profiles -- \citep[e.g.,][]{Arzoumanian2011, Palmeirim2013, Toci2015, Zucker2018,
 Arzoumanian2019}.}
 
-\subsection{the relationships between mass and fit parameters, but also m vs r}
-\textcolor{cyan}{we find that }
-
-\subsection{relationship of fit parameters (or sth derived from them) with Star Formation efficiency/ Depletion Time}
-
+\subsection{the relationships between mass and r, with fit parameters}
+\textcolor{cyan}{we find that}
+\textcolor{cyan}{\citet{ImaraForbes_2023} found that there is a }
 
 
-
-
+\subsection{relationship of fit parameters (or sth derived from them) with tdep}
+\textcolor{cyan}{we find that}
+\textcolor{cyan}{\citet{ImaraForbes_2023} found that there is a }
 
 \textcolor{red}{Concentrating on $\rho_0\cosi$, which has a strong relationship with $r_0$, we
 compare $\rho_0$ to each cloud's mass within its $A_V > 1$ contour and the cloud's
@@ -497,12 +474,10 @@ correlation in the next section.}
 $\rho_0\cosi$ seem to be closely tied to their scale radii $r_0$, their masses
 $M_{A_V > 1}$, and their depletion times $M_{A_V > 1}/\mathrm{SFR}$, but with
 little correspondence to their outer power-law slopes $-2\alpha$ or their
-truncation radii $R_T$. To delve into these potential relationships, we have found
-it helpful to plot the inferred density profiles as a function of radial distance
+truncation radii $R_T$. To delve into these potential relationships, we have found it helpful to plot the inferred density profiles as a function of radial distance
 from the spine in Figure~\ref{fig:rho}.}
 
-\textcolor{red}{While there is still a fair amount of variety between the clouds, some of which may
-come from the unknown inclination $i$, we see that, roughly speaking, the clouds'
+\textcolor{red}{While there is still a fair amount of variety between the clouds, some of which may come from the unknown inclination $i$, we see that, roughly speaking, the clouds'
 density profiles fit within an envelope of
 $\rho_{\mathrm{env}} \approx 10\,(r/\mathrm{pc})^{-1}\,\Msun\,\mathrm{pc}^{-3}$,
 with each cloud having a different radius and density at which it turns over and
