@@ -394,7 +394,7 @@ def plot_99th_perc_pts(axs, df):
 
 def plot_spine(axs, spine, scolor='cyan'):
     # [print(ax) for ax in axs]
-    lbax, ldax, bdax = axs#.flat 
+    lbax, ldax, bdax, _ = axs#.flat 
     pt, vect = spine
 
     kws = {'color': scolor, 'pivot': 'mid', 'scale': 1,
@@ -405,13 +405,13 @@ def plot_spine(axs, spine, scolor='cyan'):
     bdax.quiver(pt[2], pt[1], vect[2], vect[1], **kws)
 
 
-def plot_moment_maps(cube, coords, which, unit='Av', b_perp=None, b_parl=None):
+def plot_moment_maps(cube, coords, which, cmp='magma',unit='Av', b_perp=None, b_parl=None):
     if unit == 'Av':
         im0 = ((np.nansum(cube*u.cm**-3, axis=0)*u.pc).cgs/(2.2e21*u.cm**-2)).value
         im1 = ((np.nansum(cube*u.cm**-3, axis=1)*u.pc).cgs/(2.2e21*u.cm**-2)).value
         im2 = ((np.nansum(cube*u.cm**-3, axis=2)*u.pc).cgs/(2.2e21*u.cm**-2)).value
 
-        lvls = [0.5, 1]
+        lvls = np.arange(0.5,3.1,0.5)  #[0.5, 1]
         cmin = 0.25
         cmax = 2.1
     else:
@@ -424,20 +424,20 @@ def plot_moment_maps(cube, coords, which, unit='Av', b_perp=None, b_parl=None):
         cmax = 20
 
 
-    cmp = 'magma'
+    # cmp = 'binary'#'magma'
     kws = {'levels': 40, 'cmap': cmp, 'extend': 'max', 'norm': 'log'}
-    kws2 = {'levels': lvls, 'colors': 'black', 'linewidths': 1.5,
-                'linestyles': ['--','solid',':', 'solid']}
+    kws2 = {'levels': lvls, 'colors': 'black', 'linewidths': [0.75,1.5]}
 
-    fig, axs = plt.subplots(1, 3, dpi=200, figsize=(15, 5))#,sharey='row',sharex='col')
-    # fig, axs = plt.subplots(2, 2, dpi=200, figsize=(10, 10))#,sharey='row',sharex='col')
+    # fig, axs = plt.subplots(1, 3, dpi=200, figsize=(15, 5))#,sharey='row',sharex='col')
+    fig, axs = plt.subplots(2, 2, dpi=200, figsize=(10, 10))#,sharey='row',sharex='col')
     fig.suptitle(which)
     
-    lbax, ldax, bdax = axs.flat
-    # lbax, bdax, ldax, spax = axs.flat
+    # lbax, ldax, bdax = axs.flat
+    lbax, bdax, ldax, spax = axs.flat
 
     lbax.contourf(im0, extent=coords[:4], **kws)
     lbax.contour(im0, extent=coords[:4], **kws2)
+    # lbax.clabel(cs, levels=[0.5,1,2,3],rightside_up=True,fontsize='x-small')
 
     ldax.contourf(im1, extent=coords[[0, 1, 4, 5]], **kws)
     ldax.contour(im1, extent=coords[[0, 1, 4, 5]], **kws2)
@@ -479,7 +479,7 @@ def plot_moment_maps(cube, coords, which, unit='Av', b_perp=None, b_parl=None):
 
     # spax.set_axis('off')
 
-    for arr, ls in [(b_perp, 'solid'), (b_parl, '--')]:
+    for arr, ls in [(r_perp, 'solid'), (r_parl, '--')]:
             if arr is None:
                 continue
     
@@ -499,7 +499,7 @@ def plot_moment_maps(cube, coords, which, unit='Av', b_perp=None, b_parl=None):
 
     fig.tight_layout()
 
-    return (lbax, ldax, bdax )#, spax) #axs
+    return (lbax, ldax, bdax, spax) #axs
 
 
 def plot_contour(axs, cube, coords, val, clr):
@@ -592,11 +592,11 @@ def rho_spinal_profiles(i, source_array, cloud_catalog, drange='by r', plt_='new
 
     cloud_dict = ha(i, source_array, cloud_catalog, drange)
 
-    rmax = np.nanmax(cloud_dict['b_parl'])
+    rmax = np.nanmax(cloud_dict['r_parl'])
     px_scl = np.log10(2*0.125*u.deg.to(u.rad)*ds[i])
     rbins = 10**np.arange(px_scl, np.log10(rmax)+0.2, 0.1)
 
-    df = bin_by_r(cloud_dict['b_parl'], cloud_dict['dust_cube'], rbins)
+    df = bin_by_r(cloud_dict['r_parl'], cloud_dict['dust_cube'], rbins)
     mins = find_peaks(-df['rho'])
 
     rho0, r0, alpha = np.around((curve_fit(eq1_if, df['d'], df['rho'], p0=[10, 10, 3], maxfev=5000))[0], 2)
@@ -641,12 +641,12 @@ def rho_radial_profiles_compute(i, source_array, cloud_catalog, drange='by r', t
     # within -- 'px' for the pixel scale, or np.inf for no cut.
     cloud_dict = ha(i, source_array, cloud_catalog, drange, n_jobs=n_jobs)
 
-    log_px_scl = np.log10(2*0.125*u.deg.to(u.rad)*ds[i])
+    log_px_scl = np.log10(2*0.125*u.deg.to(u.rad)*cloud_catalog['d_mean(pc)'][i])
 
-    b_perp_bins = 10**np.arange(log_px_scl,
-                          np.log10(np.nanmax(cloud_dict['b_perp']))+0.2, 0.1)
+    r_perp_bins = 10**np.arange(log_px_scl,
+                          np.log10(np.nanmax(cloud_dict['r_perp']))+0.2, 0.1)
 
-    df = bin_by_r(cloud_dict['b_perp'], cloud_dict['dust_cube'], b_perp_bins)
+    df = bin_by_r(cloud_dict['r_perp'], cloud_dict['dust_cube'], r_perp_bins)
     mins = find_peaks(-df['rho'])
 
     rho0, r0, alpha = np.around((curve_fit(eq1_if, df['d'], df['rho'], p0=[10, 10, 3], maxfev=5000))[0], 2)
@@ -658,12 +658,12 @@ def rho_radial_profiles_compute(i, source_array, cloud_catalog, drange='by r', t
     if tube_r == 'px':
         tube_r = 3*10**log_px_scl
 
-    tube = np.ravel(cloud_dict['b_perp']) <= tube_r
+    tube = np.ravel(cloud_dict['r_perp']) <= tube_r
     tube_n = np.ravel(cloud_dict['dust_cube'])[tube]
 
     parl_branches = []
     for sign, ls in [(1, 'solid'), (-1, '--')]:
-        signed = sign*np.ravel(cloud_dict['b_parl'])[tube]
+        signed = sign*np.ravel(cloud_dict['r_parl'])[tube]
         far = np.nanmax(signed)
         if not np.isfinite(far) or far <= 10**log_px_scl:
             continue
@@ -675,7 +675,7 @@ def rho_radial_profiles_compute(i, source_array, cloud_catalog, drange='by r', t
             'parl_branches': parl_branches}
 
 
-def rho_radial_profiles_plot(result, plt_='new', color='black', lbl='by r'):
+def rho_radial_profiles_plot(result, plt_='new', color='black', lbl='by r',):
     # Drawing half of rho_radial_profiles -- consumes a dict from _compute. Kept
     # serial (matplotlib is not process-safe). `plt_` is 'new' or an axes array
     # unpacking into (perp_ax, parl_ax); the returned array feeds back in to overplot.
@@ -690,7 +690,7 @@ def rho_radial_profiles_plot(result, plt_='new', color='black', lbl='by r'):
 
     if type(plt_) == str:
         fig, axs = plt.subplots(1, 2, figsize=(12, 5), constrained_layout=True,sharex=True,sharey=True)
-        fig.suptitle(names[i])
+        # fig.suptitle(names[i])
     else:
         axs = plt_
 
@@ -728,7 +728,7 @@ def rho_radial_profiles_plot(result, plt_='new', color='black', lbl='by r'):
     return axs, [rho0, r0, alpha]
 
 
-def rho_radial_profiles(i, source_array, cloud_catalog, drange='by r', cmapping='sane', plt_='new', color='black', lbl='by r',
+def rho_radial_profiles(i, source_array, cloud_catalog, drange='by r', plt_='new', color='black', lbl='by r',
                         tube_r='px', n_jobs=1):
     # Backward-compatible wrapper: compute + plot in one call, same signature and
     # return as before. For parallel runs call rho_radial_profiles_compute across
@@ -739,7 +739,7 @@ def rho_radial_profiles(i, source_array, cloud_catalog, drange='by r', cmapping=
 
 
 
-def Sig_radial_profiles(i, source_array, cloud_catalog, drange='by r', cmapping='sane', plt_='new', color='black'):
+def Sig_radial_profiles(i, source_array, cloud_catalog, drange='by r', plt_='new', color='black'):
     # Never returns anything -- as in the source notebook. Depends on global `names`.
     cloud_dict = ha(i, source_array, cloud_catalog, drange)
 
