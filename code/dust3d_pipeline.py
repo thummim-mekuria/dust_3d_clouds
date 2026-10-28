@@ -21,8 +21,11 @@ Steps, in the order they run (each reads what the earlier ones wrote):
   projections  -> edenhofer_sky_projections_inclination.png,
                   edenhofer_xyz_topdown_mom0_inclination.png, projection_panels_xy_lb_bd.png
   ysos         -> sky_lb_ysos_n<N>.png
+  paper        copy the paper's figures into github_repo/figures/ under the names
+               main.tex uses, each from the newest run that has it (PAPER_FIGURES
+               below); writes figures/fig_sources.csv (which run each came from)
 
-  'all' = fits ... ysos. The 10-13/14 experiments run only when named:
+  'all' = fits ... paper. The 10-13/14 experiments run only when named:
   saddle, aperture, leak, contours, ysos3 (sky_lb_ysos_contours3_n{5,10,15,20}.png),
   ysos_dmax (sky_lb_ysos_n<N>_dmax.png: full-axis max-n_H contour coloured by d of the max),
   xy_zmax (xy_ysos_n<N>_zmax.png: the face-on version, max along Z coloured by Z).
@@ -49,7 +52,60 @@ import pandas as pd                                         # noqa: E402
 import dust3d_lib as L                                     # noqa: E402
 
 PIPELINE = ['fits', 'cylinder', 'windows', 'inputs', 'rho0', 'if23', 'inclinations',
-            'projections', 'ysos']
+            'projections', 'ysos', 'paper']
+
+# The paper's figures: (file in github_repo/figures/, the run output it is copied
+# from, the step that writes that output, where it goes in main.tex). {n} is
+# the n_iso; single-cloud figures use PAPER_CLOUD.
+PAPER_CLOUD = 'Perseus'
+PAPER_FIGURES = [
+    ('fig1_catalog.png', 'projection_panels_xy_lb_bd.png', 'projections',
+     'Cloud Sample: the clouds face-on, on the sky and in b-d'),
+    ('fig2.png', '{cloud}_cylinder_three_row_n{n}_maps.png', 'cylinder',
+     'Methods: l-b / l-d / b-d maps with the fitted spines'),
+    ('fig3.png', '{cloud}_cylinder_three_row_n{n}_profiles.png', 'cylinder',
+     'Methods (fig:profiles): profiles along, across and around the spine'),
+    ('fig4.png', 'rho0_correlations_n{n}_linfit_cosi_Mcyl_r0_alpha.png', 'rho0',
+     'Results (fig:params): rho0/cos i vs r0 and alpha, ours and IF23'),
+    ('fig5.png', 'rho0_correlations_n{n}_linfit_cosi_Mcyl_M.png', 'rho0',
+     'Results (fig:depletion): rho0/cos i vs M_cyl; the t_dep panel is not made yet'),
+    ('fig7.png', 'if23_fig7_ours.png', 'if23',
+     'Results (fig:scaling): M, projected length and r_dip vs r0'),
+]
+
+
+def newest_run_file(name):
+    """Path of `name` in the newest dated run under local_only/runs/ (subfolders
+    such as 2026-10-14/n10 count as their date), or None."""
+    hits = []
+    for d in sorted(os.listdir(L.RUNS)):
+        if not d[:4].isdigit():
+            continue
+        for root, dirs, files in os.walk(os.path.join(L.RUNS, d)):
+            dirs[:] = [x for x in dirs if not x.startswith('_')]
+            if name in files:
+                p = os.path.join(root, name)
+                hits.append((d, os.path.getmtime(p), p))
+    return max(hits)[2] if hits else None
+
+
+def paper_figures(n):
+    """Copy each PAPER_FIGURES source into github_repo/figures/ and record
+    where it came from in figures/fig_sources.csv."""
+    import shutil
+    rows = []
+    for dest, src, step, where in PAPER_FIGURES:
+        name = src.format(cloud=PAPER_CLOUD, n=f'{n:g}')
+        path = newest_run_file(name)
+        if path is None:
+            print(f'  {dest:18s} MISSING {name} -- run --steps {step}')
+            continue
+        shutil.copyfile(path, L.FIGURES + dest)
+        rel = os.path.relpath(path, L.LOCAL)
+        print(f'  {dest:18s} <- local_only/{rel}')
+        rows.append(dict(figure=dest, source=f'local_only/{rel}', step=step, main_tex=where))
+    pd.DataFrame(rows).to_csv(L.FIGURES + 'fig_sources.csv', index=False)
+    print('wrote', L.FIGURES + 'fig_sources.csv')
 EXPERIMENTS = ['saddle', 'aperture', 'leak', 'contours', 'ysos3', 'ysos_dmax', 'xy_zmax']
 ALL_STEPS = ['extract'] + PIPELINE + EXPERIMENTS
 
@@ -146,6 +202,9 @@ def main():
 
     if 'ysos' in steps:
         L.sky_ysos_figure(win_csv, spines, out, n_iso=n)
+
+    if 'paper' in steps:
+        paper_figures(n)
 
     # ---- experiments ----
     if 'saddle' in steps:

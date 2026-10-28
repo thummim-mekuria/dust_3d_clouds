@@ -52,6 +52,7 @@ from matplotlib.colors import LogNorm
 from matplotlib.lines import Line2D
 from matplotlib.patches import Patch, Rectangle
 from matplotlib.gridspec import GridSpec
+from matplotlib.transforms import Bbox
 
 from astropy.io import fits
 from astropy.wcs import WCS
@@ -2632,6 +2633,24 @@ def plot_mass_row(ax, mass, sample_ids, cols, zoom=True):
     ax.set_title('zoom on the window', fontsize=11)
 
 
+def save_axes_region(fig, axes, path, whole_rows=True, pad=0.1):
+    """Save only the part of `fig` covered by `axes` (with their labels, titles
+    and legends), e.g. one row or a few panels of a multi-panel figure, for the
+    paper. whole_rows: also take in every other axes of the figure whose centre
+    lies in the same vertical band (the colorbars of a row of maps)."""
+    fig.canvas.draw()
+    rend = fig.canvas.get_renderer()
+    axes = list(axes)
+    if whole_rows:
+        y0 = min(a.get_position().y0 for a in axes)
+        y1 = max(a.get_position().y1 for a in axes)
+        axes += [a for a in fig.axes if a not in axes
+                 and y0 <= 0.5 * (a.get_position().y0 + a.get_position().y1) <= y1]
+    bb = Bbox.union([a.get_tightbbox(rend) for a in axes])
+    fig.savefig(path, bbox_inches=bb.transformed(fig.dpi_scale_trans.inverted()).padded(pad))
+    print('saved', path)
+
+
 def plot_cylinder_slice(cloud, cd, res, cube, r_perp, r_parl, r_phi, spine, sample_spines,
                         sample_ids, out_png, n_iso=N_ISO, n_phi_bins=24, mass=None):
     """Two rows (maps / perp, parl, phi profiles), or with `mass` given three
@@ -2813,6 +2832,12 @@ def plot_cylinder_slice(cloud, cd, res, cube, r_perp, r_parl, r_phi, spine, samp
                  y=1.02, fontsize=13)
     fig.savefig(out_png, bbox_inches='tight')
     print('saved', out_png)
+    if mass is not None:
+        # each row on its own too (<stem>_mass / _maps / _profiles), for the paper
+        stem = out_png[:-4]
+        for row, ax_row in (('mass', [ax_full, ax_mass]), ('maps', list(maps)),
+                            ('profiles', [ax_parl, ax_perp, ax_phi])):
+            save_axes_region(fig, ax_row, f'{stem}_{row}.png')
     return dips
 
 
@@ -3069,6 +3094,9 @@ def plot_single(csv_n5, ifb_csv, out_png, mass_col='M_cyl', n_iso=5):
     fig.tight_layout()
     fig.savefig(out_png, bbox_inches='tight')
     print('saved', out_png)
+    # the parameter panels and the mass panel on their own, for the paper
+    save_axes_region(fig, axs[:2], out_png[:-4] + '_r0_alpha.png', whole_rows=False)
+    save_axes_region(fig, axs[2:], out_png[:-4] + '_M.png', whole_rows=False)
     for col, f in fits.items():
         print(f'  {col:6s} slope  ours {f["ours"][0]:+.2f} +- {f["ours"][1]:.2f} (R2 {f["ours"][3]:.2f})'
               f'   IF23 {f["IF23"][0]:+.2f} +- {f["IF23"][1]:.2f} (R2 {f["IF23"][3]:.2f})')
