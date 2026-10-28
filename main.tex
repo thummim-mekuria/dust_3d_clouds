@@ -69,7 +69,7 @@ University of Canterbury, Christchurch 8140, New Zealand}
 162 5th Avenue, New York, NY 10010, USA}
 
 \begin{abstract}
-We test a cylindrical model for the large-scale, global 3D structure of molecular clouds with observations of dust-extinction in the Solar Neighborhood. \textcolor{cyan}{we fit a linear spine to each cloud and measure how the length and orientation of the spines change for different clound boundaries. the volume density $\rho(r)$ decreases with perpendicular distance $r_\perp$ from the spine, with $\alpha \in ()$. the central density $\rho_0$ is negatively correlated with the turnover radius $r_0$, and (another relationship involving \rhoO} volume density distribution of gas and its relationship to star formation. We \textcolor{cyan}{fit the profiles over a range of distance bins and} We find that there is a \textcolor{cyan}{x type of relationship between the central volume density of a cloud $\rho_0$ and the turnover radius $r_0$. additionally, [this] is the relationship with mass. mass is also correlated with depletion time as [relationship], which is <robust to / depends on> some other factor that mass is usually connected to in the models. what are the implications of these results in terms of further developing the physical model. what are the implications of this wrt the field / ie where is it situated.}
+\textcolor{green}{idea - does the thickness of a filament affect the angular momentum of the gas traveling along it -- ie thin kehone wedefit mehed bcha new yemichlew, but if you have a thicker thing then it leads to vorticity and the angular momentum mebetaten yichilal -- plot filament thickness on the x axis, peak gas density on the y axis, color coded by the vorticity of the gas in the filament}We test a cylindrical model for the large-scale, global 3D structure of molecular clouds with observations of dust-extinction in the Solar Neighborhood. \textcolor{cyan}{we fit a linear spine to each cloud and measure how the length and orientation of the spines change for different clound boundaries. the volume density $\rho(r)$ decreases with perpendicular distance $r_\perp$ from the spine, with $\alpha \in ()$. the central density $\rho_0$ is negatively correlated with the turnover radius $r_0$, and (another relationship involving \rhoO} volume density distribution of gas and its relationship to star formation. We \textcolor{cyan}{fit the profiles over a range of distance bins and} We find that there is a \textcolor{cyan}{x type of relationship between the central volume density of a cloud $\rho_0$ and the turnover radius $r_0$. additionally, [this] is the relationship with mass. mass is also correlated with depletion time as [relationship], which is <robust to / depends on> some other factor that mass is usually connected to in the models. what are the implications of these results in terms of further developing the physical model. what are the implications of this wrt the field / ie where is it situated.}
 \end{abstract}
 
 \keywords{Molecular clouds (1072) --- Interstellar medium (847) --- Star formation (1569) ---
@@ -112,7 +112,7 @@ where $\rho_0$ is the peak density along the central spine of the cloud, $r_0$ i
 
 \textcolor{cyan}{By fitting the surface density maps (using MCMC) \citet{ImaraForbes_2023} derive the spine parameters $\alpha$, $\rho_0$, and $r_0$ for the clouds in their sample. they find that clouds that have higher central densities tend to be compact (smaller turnover radii), but the fall-off index is insensitive to both r0 and rho0. \citet{ImaraForbes_2023} also found that (relationships with mass and tdep), implying that the  molecular clouds with () are further along in their evolution than }
 
-\textcolor{cyan}{tension between volume density derived sfr/tdep vs from yso counts- this implies that (need to directly probe three--dimensional structure). overview of the different 3D maps available - leike, edenhofer, dharmwardena, wang.}
+\textcolor{cyan}{tension between volume density derived sfr/tdep vs from yso counts- this implies that (need to directly probe three--dimensional structure). overview of the different 3D maps available - leike, edenhofer, dharmawardena, wang.}
 
 
 \begin{figure*}[ht!]
@@ -124,10 +124,12 @@ where $\rho_0$ is the peak density along the central spine of the cloud, $r_0$ i
 
 
 \subsection{data\label{sec:obs}}
-\textcolor{cyan}{Gaia photometry and parallaxes make it possible to map the line-of-sight extinction due to dust with high angular resolution (down to 0.11 degree). These have various sky and distance coverages (out to x kpc) which make them suitable for () analyses. of the available dust maps, the edenhofer map matches the requirements of the science}
+\textcolor{cyan}{Gaia photometry (2mass, lamost, what are the other stellar extinction / photometric catalogs that the dust maps are based on) have made it possible to reconstruct the three dimensional structure of the milky way. there are several dust maps available (citation) which have a variety of distance coverage (eske 50kpc?) and high angular resolutions (down to 0.11 degree). there is usually a trade-off between distance and resolution -- for our purposes, we are looking at things in the solar neighborhood so we opted for higher resolution.
+
+wang, edenhofer ena dharwardenan (are these the top three resolutions?) in slightly more detail compare mareg. we went with edenhofer one because (-- double check whether wang + gaussian kernel works better or edenhofer)}
 
 \subsection{Cloud Sample}\label{sec:sample}
-\textcolor{cyan}{we start with the set of clouds studied by [zucker 2022], chose the ones with at least one of the sightlines with d < 1.2kpc, average together the measurements to the sightlines ($d_mean, d_std$) and record their spatial extent (lmin, lmax, bmin, bmax) }
+\textcolor{cyan}{we select our clouds with the set of clouds studied by [zucker 2022], chose the ones with at least one of the sightlines with d < 1.2kpc, average together the measurements to the sightlines ($d_mean, d_std$) and record their spatial extent (lmin, lmax, bmin, bmax) }
 
 \begin{table*}[ht!]
 \begin{center}
@@ -195,12 +197,12 @@ where $\rho_0$ is the peak density along the central spine of the cloud, $r_0$ i
 \end{figure*}
 
 
-\begin{figure}[ht!]
+\begin{figure*}[ht!]
 \centering
 \includegraphics[width=\linewidth]{figures/fig3.png}
 \caption{volume density profile along the spine (left) and as a function of perpendicular distance from the spine (right)}
 \label{fig:profiles}
-\end{figure}
+\end{figure*}
 
 \begin{figure}[ht!]
 \centering
@@ -431,7 +433,7 @@ Arzoumanian2019}.}
 
 \subsection{the relationships between mass and r, with fit parameters}
 \textcolor{cyan}{we find that}
-\textcolor{cyan}{\citet{ImaraForbes_2023} found that there is a }
+\textcolor{cyan}{\cite{ImaraForbes_2023} found that there is a }
 
 
 \subsection{relationship of fit parameters (or sth derived from them) with tdep}
