@@ -8,7 +8,7 @@ Cylinder models of nearby molecular clouds fitted to the Edenhofer et al. (2023)
 | Path | In git? | What it is |
 |---|---|---|
 | `main.tex`, `references.bib`, `aastex631.cls`, `aasjournal.bst` | yes | the paper (Overleaf syncs these) |
-| `figures/fig*` | yes | the paper's figures; nothing else in `figures/` is tracked |
+| `figures/fig*` | yes | the paper's figures, written by `--steps paper` from the newest run (the `PAPER_FIGURES` table in `dust3d_pipeline.py`); `figures/fig_sources.csv` records which run each came from |
 | `code/dust3d_lib.py` | yes | every calculation and plotting function; unused older functions sit in its LEGACY section at the end |
 | `code/dust3d_pipeline.py` | yes | the driver: `python code/dust3d_pipeline.py --help` |
 | `code/hpc/` | yes | dendrogram + SCIMES segmentation jobs for the Hummingbird cluster (own README) |
