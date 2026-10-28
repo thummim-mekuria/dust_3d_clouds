@@ -2521,6 +2521,77 @@ def cylinder_profile(i, proxy, table1, dmask, spine, lb_pad=1.0, lb_search_pad=P
     return cd, res, cube, r_perp, r_parl, r_phi, pad
 
 
+def stacked_profiles_figure(outdir, cloud='Perseus', n_iso=N_ISO):
+    """stacked_profiles_n<N>.png, from the cylinder step's radial_profiles_n<N>.csv
+    and radial_profile_fits_n<N>.csv in `outdir`. Left: `cloud`'s d_perp profile
+    (mean map, with the 16-84% spread of the posterior samples' profiles) and its
+    Plummer fit. Right: every cloud's profile out to its r_dip, with the
+    rho_env = 10 (r/pc)^-1 Msun pc^-3 envelope of Imara & Forbes (2023, Fig. 6).
+    Densities in Msun pc^-3 (1.36 m_p per H), n in cm^-3 on the right-hand axis."""
+    outdir = _dir(outdir)
+    prof = pd.read_csv(f'{outdir}radial_profiles_n{n_iso:g}.csv')
+    fits = pd.read_csv(f'{outdir}radial_profile_fits_n{n_iso:g}.csv').set_index('cloud')
+    conv = float(rho_to_mass_density(1.0))          # Msun pc^-3 per cm^-3
+
+    def profile(c):
+        """mean-map d, n and the samples' 16th / 84th percentiles on its grid"""
+        m = prof[(prof['cloud'] == c) & (prof['sample'] == -1)].sort_values('d')
+        d, n = m['d'].to_numpy(float), m['n'].to_numpy(float)
+        S = [np.interp(d, g['d'], g['n'], left=np.nan, right=np.nan)
+             for _, g in prof[(prof['cloud'] == c) & (prof['sample'] >= 0)].groupby('sample')]
+        lo, hi = np.nanpercentile(S, [16, 84], axis=0) if len(S) > 1 else (None, None)
+        ok = (d > 0) & (n > 0)
+        return d[ok], n[ok], (lo[ok] if lo is not None else None), (hi[ok] if hi is not None else None)
+
+    fig, (a1, a2) = plt.subplots(1, 2, figsize=(15, 5.8), dpi=150, constrained_layout=True)
+
+    # (a) one cloud
+    d, n, lo, hi = profile(cloud)
+    f = fits.loc[cloud]
+    if lo is not None:
+        a1.fill_between(d, lo * conv, hi * conv, color='0.82', lw=0, zorder=1,
+                        label='16–84% of the posterior samples')
+    a1.scatter(d, n * conv, s=20, color='black', zorder=3, label='mean map')
+    rr = np.geomspace(d.min(), d.max(), 300)
+    a1.plot(rr, plummer(rr, f['rho0'], f['r0'], f['alpha']) * conv, color='tab:red', zorder=2,
+            label=rf"Plummer fit ($r \leq r_{{\rm dip}}$): $\rho_0$ = {f['rho0'] * conv:.2g} "
+                  rf"$M_\odot$ pc$^{{-3}}$, $r_0$ = {f['r0']:.2g} pc, $\alpha$ = {f['alpha']:.2f}")
+    a1.axvline(f['r0'], color='tab:red', ls=':', lw=1.3, label=rf"$r_0$ = {f['r0']:.2g} pc")
+    a1.axvline(f['r_dip'], color='black', ls='--', lw=1.1,
+               label=rf"$r_{{\rm dip}}$ = {f['r_dip']:.0f} pc")
+    a1.set_title(f'(a)  {cloud}', fontsize=12)
+    a1.legend(loc='lower left', fontsize=8.5, frameon=False)
+
+    # (b) every cloud, out to its r_dip
+    names = list(fits.index)
+    cols = plt.cm.tab20(np.linspace(0, 1, 20))[:len(names)]
+    for c, col in zip(names, cols):
+        d, n, lo, hi = profile(c)
+        keep = d <= fits.loc[c, 'r_dip']
+        if lo is not None:
+            a2.fill_between(d[keep], lo[keep] * conv, hi[keep] * conv, color=col, alpha=0.18, lw=0)
+        a2.plot(d[keep], n[keep] * conv, color=col, lw=1.8, label=c)
+    rr = np.geomspace(0.5, 200, 100)
+    a2.plot(rr, 10 / rr, color='black', ls='--', lw=1.4,
+            label=r'$\rho_{\rm env} = 10\,(r/{\rm pc})^{-1}$')
+    a2.set_title(r'(b)  all clouds, out to $r_{\rm dip}$', fontsize=12)
+    a2.legend(loc='upper left', bbox_to_anchor=(1.22, 1.0), fontsize=8.5, frameon=False)
+
+    for ax in (a1, a2):
+        ax.set_xscale('log'); ax.set_yscale('log')
+        ax.set_xlabel(r'$d_\perp$ (pc)')
+        ax.set_ylabel(r'$\rho$ ($M_\odot$ pc$^{-3}$)')
+        sec = ax.secondary_yaxis('right', functions=(lambda y: y / conv, lambda v: v * conv))
+        sec.set_ylabel(r'$n$ (cm$^{-3}$)')
+        ax.grid(True, which='major', alpha=0.25)
+    a2.set_xlim(left=min(a2.get_xlim()[0], a1.get_xlim()[0]))
+    out = f'{outdir}stacked_profiles_n{n_iso:g}.png'
+    fig.savefig(out, bbox_inches='tight')
+    plt.close(fig)
+    print('saved', out)
+    return out
+
+
 def cylinder_samples(cloud, table1, win_lo, win_hi, fits, lb_pad=1.0,
                      lb_search_pad=PAD_STORED, spine_slab=True, perp_nmin=0.0,
                      perp_fit='lin_dip'):
@@ -2528,7 +2599,7 @@ def cylinder_samples(cloud, table1, win_lo, win_hi, fits, lb_pad=1.0,
     own cube with its own spine and caps (fits['samples'], from get_spine_fits).
     A sample whose walk never reached n_iso (zero-length spine) is skipped.
     Returns one dict per sample: sample, rho0, r0, alpha, r_dip, dip_flag,
-    M_cyl, pad, slab_thin."""
+    M_cyl, pad, slab_thin, and profile (the d_perp profile, a d / rho frame)."""
     i = list(table1['Name']).index(cloud)
     dmask = (ds >= win_lo) & (ds <= win_hi)
     scubes, indep, (sx, sy) = build_sample_cubes(table1, cloud, pad=lb_search_pad)
@@ -2546,7 +2617,8 @@ def cylinder_samples(cloud, table1, win_lo, win_hi, fits, lb_pad=1.0,
         rho0_, r0_, al_ = res['fit']
         out.append({'sample': int(fits['indep'][k]), 'rho0': rho0_, 'r0': abs(r0_),
                     'alpha': al_, 'r_dip': res['r_dip'], 'dip_flag': res['dip_flag'],
-                    'M_cyl': res['M_cyl'], 'pad': pad, 'slab_thin': res['slab_thin']})
+                    'M_cyl': res['M_cyl'], 'pad': pad, 'slab_thin': res['slab_thin'],
+                    'profile': res['df_lin'][['d', 'rho']].copy()})
     return out
 
 
@@ -4545,7 +4617,9 @@ def cylinder_figures(table1, win_csv, outdir, clouds=None, n_iso=N_ISO, n_seeds=
     the sample's own spine and caps (cylinder_samples), adding <col>_sd and
     <col>_smean (spread and mean over the samples) for rho0, r0, alpha, r_dip and
     M_cyl, and writing every sample's values to
-    <outdir>/radial_profile_fits_samples_n<N>.csv.
+    <outdir>/radial_profile_fits_samples_n<N>.csv. Every d_perp profile (mean map:
+    sample -1, and each sample) goes to <outdir>/radial_profiles_n<N>.csv
+    (cloud, sample, d in pc, n in cm^-3), for stacked_profiles_figure.
     """
     outdir = _dir(outdir)
     spine_cache = spine_cache or outdir + '_spine_fits'
@@ -4554,7 +4628,7 @@ def cylinder_figures(table1, win_csv, outdir, clouds=None, n_iso=N_ISO, n_seeds=
         allp, indep_p = build_sample_profiles(table1)
         names = list(table1['Name'])
     win = pd.read_csv(win_csv).set_index('cloud')
-    rows, sample_rows = [], []
+    rows, sample_rows, prof_rows = [], [], []
     for cloud in (clouds or list(table1['Name'])):
         print(f'== {cloud}')
         row = win.loc[cloud]
@@ -4580,6 +4654,8 @@ def cylinder_figures(table1, win_csv, outdir, clouds=None, n_iso=N_ISO, n_seeds=
         rd, nd, fl = dips['profile']
         res = out[1]
         rho0_, r0_, al_ = res['fit']
+        prof_rows.append(res['df_lin'][['d', 'rho']].rename(columns={'rho': 'n'})
+                         .assign(cloud=cloud, sample=-1))
         rec = {'cloud': cloud, 'slab': perp_slab, 'perp_nmin': perp_nmin,
                'perp_fit': perp_fit,
                'rho0': rho0_, 'r0': abs(r0_), 'alpha': al_,
@@ -4594,6 +4670,9 @@ def cylinder_figures(table1, win_csv, outdir, clouds=None, n_iso=N_ISO, n_seeds=
             smp = cylinder_samples(cloud, table1, lo, hi, fits_, lb_pad, lb_search_pad,
                                    spine_slab=(perp_slab == 'spine'), perp_nmin=perp_nmin,
                                    perp_fit=perp_fit)
+            for s_ in smp:
+                prof_rows.append(s_.pop('profile').rename(columns={'rho': 'n'})
+                                 .assign(cloud=cloud, sample=s_['sample']))
             sdf = pd.DataFrame(smp)
             sdf.insert(0, 'cloud', cloud)
             sample_rows.append(sdf)
@@ -4624,6 +4703,14 @@ def cylinder_figures(table1, win_csv, outdir, clouds=None, n_iso=N_ISO, n_seeds=
             new = pd.concat([old[~old['cloud'].isin(new['cloud'])], new], ignore_index=True)
         new.to_csv(spath, index=False)
         print(f'wrote {spath}')
+    if prof_rows:
+        ppath = f'{outdir}radial_profiles_n{n_iso:g}.csv'
+        new = pd.concat(prof_rows, ignore_index=True)[['cloud', 'sample', 'd', 'n']]
+        if os.path.exists(ppath):
+            old = pd.read_csv(ppath)
+            new = pd.concat([old[~old['cloud'].isin(new['cloud'])], new], ignore_index=True)
+        new.to_csv(ppath, index=False)
+        print(f'wrote {ppath}')
     return path
 
 
@@ -4987,6 +5074,21 @@ def projection_panels_figure(csv, fits_dir, outdir, n_iso=N_ISO, sky_cache=None,
     ax_lb.legend(handles=_map_legend(n_iso), loc='lower left', fontsize=7.5, framealpha=0.9,
                  facecolor='white', edgecolor='0.45')
     out = outdir + 'projection_panels_xy_lb_bd.png'
+    fig.savefig(out, dpi=200, bbox_inches='tight', facecolor='white')
+    plt.close(fig)
+    print('saved', out)
+
+    # the l-b panel on its own, with its own colour bar (the paper's sample map)
+    fig = plt.figure(figsize=(15, 7.6))
+    gs = GridSpec(1, 2, figure=fig, width_ratios=[1, 0.025], wspace=0.04)
+    ax_lb, cax = fig.add_subplot(gs[0, 0]), fig.add_subplot(gs[0, 1])
+    im = draw_maps(fig, S, norm, ax_lb=ax_lb)
+    ax_lb.set_title(r'$\ell$–$b$,  integrated along $d$,  $d\leq$%d pc' % DMAX, fontsize=11, pad=8)
+    cb = fig.colorbar(im, cax=cax)
+    cb.set_label('A$_V$  [mag]', labelpad=8, fontsize=10)
+    ax_lb.legend(handles=_map_legend(n_iso), loc='lower left', fontsize=7.5, framealpha=0.9,
+                 facecolor='white', edgecolor='0.45')
+    out = outdir + 'projection_sky_lb.png'
     fig.savefig(out, dpi=200, bbox_inches='tight', facecolor='white')
     plt.close(fig)
     print('saved', out)

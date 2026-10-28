@@ -9,7 +9,8 @@ Steps, in the order they run (each reads what the earlier ones wrote):
   fits         distance windows, spine angles and per-sample Plummer fits
                -> spine_angles_and_fits_samples_n<N>.csv (+ projmaps figures)
   cylinder     40-seed spines (cached in _spine_fits/), cylinder profiles and fits
-               -> <cloud>_cylinder_three_row_n<N>.png, radial_profile_fits_n<N>.csv
+               -> <cloud>_cylinder_three_row_n<N>.png, radial_profile_fits_n<N>.csv,
+                  radial_profiles_n<N>.csv, stacked_profiles_n<N>.png
   windows      -> <cloud>_sample_spine_windows.png
   inputs       rho0/r0/alpha/r_dip + inclination + A_V-contour masses
                -> rho0_inputs_n<N>_linfit.csv
@@ -19,7 +20,8 @@ Steps, in the order they run (each reads what the earlier ones wrote):
   if23         -> if23_fig7_ours.png
   inclinations -> spine_inclination_panels_n<N>.png, spine_inclinations[_scatter].png
   projections  -> edenhofer_sky_projections_inclination.png,
-                  edenhofer_xyz_topdown_mom0_inclination.png, projection_panels_xy_lb_bd.png
+                  edenhofer_xyz_topdown_mom0_inclination.png, projection_panels_xy_lb_bd.png,
+                  projection_sky_lb.png
   ysos         -> sky_lb_ysos_n<N>.png
   paper        copy the paper's figures into github_repo/figures/ under the names
                main.tex uses, each from the newest run that has it (PAPER_FIGURES
@@ -59,12 +61,12 @@ PIPELINE = ['fits', 'cylinder', 'windows', 'inputs', 'rho0', 'if23', 'inclinatio
 # the n_iso; single-cloud figures use PAPER_CLOUD.
 PAPER_CLOUD = 'Perseus'
 PAPER_FIGURES = [
-    ('fig1_catalog.png', 'projection_panels_xy_lb_bd.png', 'projections',
-     'Cloud Sample: the clouds face-on, on the sky and in b-d'),
+    ('fig1_catalog.png', 'projection_sky_lb.png', 'projections',
+     'Cloud Sample: the clouds on the sky (l-b)'),
     ('fig2.png', '{cloud}_cylinder_three_row_n{n}_maps.png', 'cylinder',
      'Methods: l-b / l-d / b-d maps with the fitted spines'),
-    ('fig3.png', '{cloud}_cylinder_three_row_n{n}_profiles.png', 'cylinder',
-     'Methods (fig:profiles): profiles along, across and around the spine'),
+    ('fig3.png', 'stacked_profiles_n{n}.png', 'cylinder',
+     'Methods (fig:profiles): one cloud d_perp profile, then every cloud stacked'),
     ('fig4.png', 'rho0_correlations_n{n}_linfit_cosi_Mcyl_r0_alpha.png', 'rho0',
      'Results (fig:params): rho0/cos i vs r0 and alpha, ours and IF23'),
     ('fig5.png', 'rho0_correlations_n{n}_linfit_cosi_Mcyl_M.png', 'rho0',
@@ -165,6 +167,7 @@ def main():
     if 'cylinder' in steps:
         L.cylinder_figures(table1, win_csv, out, clouds=args.clouds, n_iso=n,
                            refit=args.refit, spine_cache=spines)
+        L.stacked_profiles_figure(out, cloud=PAPER_CLOUD, n_iso=n)
 
     if 'windows' in steps:
         L.spine_window_figures(table1, win_csv, out, clouds=args.clouds, n_iso=n,
