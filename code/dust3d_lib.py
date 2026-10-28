@@ -4841,6 +4841,75 @@ def rho0_correlation_figures(fig_dir, csv, ifb_csv=IFB_DEFAULT, n_iso=10.0,
     return fits
 
 
+# our cloud names for the IF23 clouds we also fit (IF23 'Corona' = Corona Australis;
+# Rosette and MonR2 are not in our sample)
+IF23_SHARED = {'Orion A': 'Orion A', 'Orion B': 'Orion B', 'California': 'California',
+               'Perseus': 'Perseus', 'Corona': 'Corona Australis', 'Ophiuchus': 'Ophiuchus'}
+
+
+def if23_param_comparison_figure(inputs, out, ifb=IFB_DEFAULT):
+    """if23_param_comparison.png: rho0/cos i, r0 and alpha of this work (y) against
+    Imara & Forbes (2023, Figs. 4/5; x) for the clouds both fit, with the 1:1 line
+    and a factor-of-2 band. Ours: mean map, error bars the posterior-sample sd;
+    IF23: their 68% intervals. Returns the matched table."""
+    df = pd.read_csv(inputs).set_index('cloud')
+    ifb_ = pd.read_csv(ifb).set_index('cloud')
+    conv = float(rho_to_mass_density(1.0))          # Msun pc^-3 per cm^-3
+    rows = []
+    for theirs, ours in IF23_SHARED.items():
+        if ours not in df.index or theirs not in ifb_.index:
+            continue
+        o, t = df.loc[ours], ifb_.loc[theirs]
+        ci = float(o['cos_i'])
+        rows.append(dict(
+            cloud=ours,
+            rho_if=t['rho0_over_cosi'], rho_if_lo=t['rho0_lo'], rho_if_hi=t['rho0_hi'],
+            rho=o['rho0'] * conv / ci, rho_sd=o['rho0_sd'] * conv / ci,
+            r0_if=t['r0_pc'], r0_if_lo=t['r0_lo'], r0_if_hi=t['r0_hi'],
+            r0=o['r0'], r0_sd=o['r0_sd'],
+            al_if=t['alpha'], al_if_lo=t['alpha_lo'], al_if_hi=t['alpha_hi'],
+            al=o['alpha'], al_sd=o['alpha_sd']))
+    m = pd.DataFrame(rows)
+
+    fig, axs = plt.subplots(1, 3, figsize=(16, 5.4), dpi=150, constrained_layout=True)
+    panels = [('rho', r'$\rho_0/\cos i$ ($M_\odot$ pc$^{-3}$)'),
+              ('r0', r'$r_0$ (pc)'), ('al', r'$\alpha$')]
+    cols = plt.cm.tab10(np.arange(len(m)))
+    for ax, (k, lab) in zip(axs, panels):
+        x, y = m[f'{k}_if'].to_numpy(float), m[k].to_numpy(float)
+        xerr = np.vstack([x - m[f'{k}_if_lo'], m[f'{k}_if_hi'] - x])
+        yerr = m[f'{k}_sd'].to_numpy(float)
+        yerr = np.vstack([np.minimum(yerr, 0.9 * y), yerr])   # keep log axes finite
+        if k == 'al':            # linear; California's sample sd (~20) runs off the top
+            lo, hi = 0.0, 3.0
+            g = np.linspace(0.01, hi, 50)
+        else:
+            lo = 0.5 * min(np.nanmin(x - xerr[0]), np.nanmin(y - yerr[0]))
+            hi = 2.0 * max(np.nanmax(x + xerr[1]), np.nanmax(y + yerr[1]))
+            lo = max(lo, hi / 1e4)
+            g = np.geomspace(lo, hi, 50)
+        ax.fill_between(g, g / 2, g * 2, color='0.92', zorder=0, label='factor of 2')
+        ax.plot(g, g, color='0.3', ls='--', lw=1.2, zorder=1, label='1:1')
+        for j, r in m.iterrows():
+            ax.errorbar(x[j], y[j], xerr=xerr[:, [j]], yerr=yerr[:, [j]], fmt='o', ms=8,
+                        color=cols[j], mec='black', mew=0.6, elinewidth=1.1, capsize=2,
+                        zorder=3, label=r['cloud'])
+        if k != 'al':
+            ax.set_xscale('log'); ax.set_yscale('log')
+        ax.set_xlim(lo, hi); ax.set_ylim(lo, hi); ax.set_aspect('equal')
+        ax.set_xlabel(f'Imara & Forbes (2023):  {lab}')
+        ax.set_ylabel(f'this work:  {lab}')
+        ax.grid(True, which='major', alpha=0.25)
+    axs[0].legend(loc='upper left', fontsize=8.5, framealpha=0.9)
+    fig.savefig(out, bbox_inches='tight')
+    plt.close(fig)
+    print('saved', out)
+    for _, r in m.iterrows():
+        print(f"  {r['cloud']:17s} rho0/cosi {r['rho']:6.2f} vs {r['rho_if']:6.2f}   "
+              f"r0 {r['r0']:6.2f} vs {r['r0_if']:5.2f}   alpha {r['al']:5.2f} vs {r['al_if']:5.2f}")
+    return m
+
+
 def if23_fig7_figure(inputs, fits_dir, out, tag=f'n{N_ISO:g}_s40', ifb=IFB_FIG7):
     """(from plot_if23_fig7.py) Our version of Imara & Forbes (2023) Fig. 7.
 
