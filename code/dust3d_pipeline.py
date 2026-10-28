@@ -59,19 +59,22 @@ PIPELINE = ['fits', 'cylinder', 'windows', 'inputs', 'rho0', 'if23', 'inclinatio
 # The paper's figures: (file in github_repo/figures/, the run output it is copied
 # from, the step that writes that output, where it goes in main.tex). {n} is
 # the n_iso; single-cloud figures use PAPER_CLOUD.
-PAPER_CLOUD = 'Perseus'
+PAPER_CLOUD = 'Perseus'          # the maps figure
+PROFILE_CLOUD = 'Orion A'        # the single-cloud panel of the stacked profiles
 PAPER_FIGURES = [
     ('fig1_catalog.png', 'projection_sky_lb.png', 'projections',
      'Cloud Sample: the clouds on the sky (l-b)'),
     ('fig2.png', '{cloud}_cylinder_three_row_n{n}_maps.png', 'cylinder',
      'Methods: l-b / l-d / b-d maps with the fitted spines'),
-    ('fig3.png', 'stacked_profiles_n{n}.png', 'cylinder',
+    ('fig3.png', 'spine_inclination_panels_n{n}.png', 'inclinations',
+     'Methods (fig:inclinations): spine inclinations to the l-b, X-Y and b-d planes'),
+    ('fig4.png', 'stacked_profiles_n{n}.png', 'cylinder',
      'Methods (fig:profiles): one cloud d_perp profile, then every cloud stacked'),
-    ('fig4.png', 'rho0_correlations_n{n}_linfit_cosi_Mcyl_r0_alpha.png', 'rho0',
+    ('fig5.png', 'rho0_correlations_n{n}_linfit_cosi_Mcyl_r0_alpha.png', 'rho0',
      'Results (fig:params): rho0/cos i vs r0 and alpha, ours and IF23'),
-    ('fig5.png', 'rho0_correlations_n{n}_linfit_cosi_Mcyl_M.png', 'rho0',
+    ('fig6.png', 'rho0_correlations_n{n}_linfit_cosi_Mcyl_M.png', 'rho0',
      'Results (fig:depletion): rho0/cos i vs M_cyl; the t_dep panel is not made yet'),
-    ('fig7.png', 'if23_fig7_ours.png', 'if23',
+    ('fig8.png', 'if23_fig7_ours.png', 'if23',
      'Results (fig:scaling): M, projected length and r_dip vs r0'),
 ]
 
@@ -167,7 +170,7 @@ def main():
     if 'cylinder' in steps:
         L.cylinder_figures(table1, win_csv, out, clouds=args.clouds, n_iso=n,
                            refit=args.refit, spine_cache=spines)
-        L.stacked_profiles_figure(out, cloud=PAPER_CLOUD, n_iso=n)
+        L.stacked_profiles_figure(out, cloud=PROFILE_CLOUD, n_iso=n)
 
     if 'windows' in steps:
         L.spine_window_figures(table1, win_csv, out, clouds=args.clouds, n_iso=n,

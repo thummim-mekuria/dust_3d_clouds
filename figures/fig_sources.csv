@@ -1,7 +1,8 @@
 figure,source,step,main_tex
 fig1_catalog.png,local_only/runs/2026-10-26/projection_sky_lb.png,projections,Cloud Sample: the clouds on the sky (l-b)
 fig2.png,local_only/runs/2026-10-26/Perseus_cylinder_three_row_n10_maps.png,cylinder,Methods: l-b / l-d / b-d maps with the fitted spines
-fig3.png,local_only/runs/2026-10-26/stacked_profiles_n10.png,cylinder,"Methods (fig:profiles): one cloud d_perp profile, then every cloud stacked"
-fig4.png,local_only/runs/2026-10-26/rho0_correlations_n10_linfit_cosi_Mcyl_r0_alpha.png,rho0,"Results (fig:params): rho0/cos i vs r0 and alpha, ours and IF23"
-fig5.png,local_only/runs/2026-10-26/rho0_correlations_n10_linfit_cosi_Mcyl_M.png,rho0,Results (fig:depletion): rho0/cos i vs M_cyl; the t_dep panel is not made yet
-fig7.png,local_only/runs/2026-10-26/if23_fig7_ours.png,if23,"Results (fig:scaling): M, projected length and r_dip vs r0"
+fig3.png,local_only/runs/2026-10-26/spine_inclination_panels_n10.png,inclinations,"Methods (fig:inclinations): spine inclinations to the l-b, X-Y and b-d planes"
+fig4.png,local_only/runs/2026-10-26/stacked_profiles_n10.png,cylinder,"Methods (fig:profiles): one cloud d_perp profile, then every cloud stacked"
+fig5.png,local_only/runs/2026-10-26/rho0_correlations_n10_linfit_cosi_Mcyl_r0_alpha.png,rho0,"Results (fig:params): rho0/cos i vs r0 and alpha, ours and IF23"
+fig6.png,local_only/runs/2026-10-26/rho0_correlations_n10_linfit_cosi_Mcyl_M.png,rho0,Results (fig:depletion): rho0/cos i vs M_cyl; the t_dep panel is not made yet
+fig8.png,local_only/runs/2026-10-26/if23_fig7_ours.png,if23,"Results (fig:scaling): M, projected length and r_dip vs r0"
