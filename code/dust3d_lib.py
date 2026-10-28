@@ -2525,8 +2525,9 @@ def stacked_profiles_figure(outdir, cloud='Perseus', n_iso=N_ISO):
     """stacked_profiles_n<N>.png, from the cylinder step's radial_profiles_n<N>.csv
     and radial_profile_fits_n<N>.csv in `outdir`. Left: `cloud`'s d_perp profile
     (mean map, with the 16-84% spread of the posterior samples' profiles) and its
-    Plummer fit. Right: every cloud's profile out to its r_dip, with the
-    rho_env = 10 (r/pc)^-1 Msun pc^-3 envelope of Imara & Forbes (2023, Fig. 6).
+    Plummer fit. Right: every cloud's profile out to its r_dip, a dot on each at
+    its r0, and the rho_env = 10 (r/pc)^-1 Msun pc^-3 envelope of Imara & Forbes
+    (2023, Fig. 6).
     Densities in Msun pc^-3 (1.36 m_p per H), n in cm^-3 on the right-hand axis."""
     outdir = _dir(outdir)
     prof = pd.read_csv(f'{outdir}radial_profiles_n{n_iso:g}.csv')
@@ -2571,9 +2572,14 @@ def stacked_profiles_figure(outdir, cloud='Perseus', n_iso=N_ISO):
         if lo is not None:
             a2.fill_between(d[keep], lo[keep] * conv, hi[keep] * conv, color=col, alpha=0.18, lw=0)
         a2.plot(d[keep], n[keep] * conv, color=col, lw=1.8, label=c)
+        r0c = fits.loc[c, 'r0']                     # on the profile, interpolated in log-log
+        n0 = 10**np.interp(np.log10(r0c), np.log10(d), np.log10(n))
+        a2.scatter([r0c], [n0 * conv], s=46, color=col, edgecolor='black', linewidth=0.8,
+                   zorder=4)
     rr = np.geomspace(0.5, 200, 100)
     a2.plot(rr, 10 / rr, color='black', ls='--', lw=1.4,
             label=r'$\rho_{\rm env} = 10\,(r/{\rm pc})^{-1}$')
+    a2.scatter([], [], s=46, color='white', edgecolor='black', linewidth=0.8, label=r'$r_0$')
     a2.set_title(r'(b)  all clouds, out to $r_{\rm dip}$', fontsize=12)
     a2.legend(loc='upper left', bbox_to_anchor=(1.22, 1.0), fontsize=8.5, frameon=False)
 
