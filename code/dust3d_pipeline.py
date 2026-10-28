@@ -17,7 +17,7 @@ Steps, in the order they run (each reads what the earlier ones wrote):
   rho0         -> rho0_correlations_n<N>_linfit_cosi_Mcyl.png (ours and IF23,
                   each with its own log-log fit; mass between the spine caps
                   out to r_dip), rho0_fit_slopes_n<N>.csv
-  if23         -> if23_fig7_ours.png
+  if23         -> if23_fig7_ours.png, if23_param_comparison.png (ours vs IF23 for the shared clouds)
   inclinations -> spine_inclination_panels_n<N>.png, spine_inclinations[_scatter].png
   projections  -> edenhofer_sky_projections_inclination.png,
                   edenhofer_xyz_topdown_mom0_inclination.png, projection_panels_xy_lb_bd.png,
@@ -68,13 +68,15 @@ PAPER_FIGURES = [
      'Methods: l-b / l-d / b-d maps with the fitted spines'),
     ('fig3.png', 'spine_inclination_panels_n{n}.png', 'inclinations',
      'Methods (fig:inclinations): spine inclinations to the l-b, X-Y and b-d planes'),
-    ('fig4.png', 'stacked_profiles_n{n}.png', 'cylinder',
+    ('fig4.png', 'if23_param_comparison.png', 'if23',
+     'Results (fig:if23compare): rho0/cos i, r0, alpha vs IF23 for the shared clouds'),
+    ('fig5.png', 'stacked_profiles_n{n}.png', 'cylinder',
      'Methods (fig:profiles): one cloud d_perp profile, then every cloud stacked'),
-    ('fig5.png', 'rho0_correlations_n{n}_linfit_cosi_Mcyl_r0_alpha.png', 'rho0',
+    ('fig6.png', 'rho0_correlations_n{n}_linfit_cosi_Mcyl_r0_alpha.png', 'rho0',
      'Results (fig:params): rho0/cos i vs r0 and alpha, ours and IF23'),
-    ('fig6.png', 'rho0_correlations_n{n}_linfit_cosi_Mcyl_M.png', 'rho0',
+    ('fig7.png', 'rho0_correlations_n{n}_linfit_cosi_Mcyl_M.png', 'rho0',
      'Results (fig:depletion): rho0/cos i vs M_cyl; the t_dep panel is not made yet'),
-    ('fig8.png', 'if23_fig7_ours.png', 'if23',
+    ('fig9.png', 'if23_fig7_ours.png', 'if23',
      'Results (fig:scaling): M, projected length and r_dip vs r0'),
 ]
 
@@ -195,6 +197,7 @@ def main():
 
     if 'if23' in steps:
         L.if23_fig7_figure(inputs_csv, spines, out + 'if23_fig7_ours.png', tag=f'{tag}_s40')
+        L.if23_param_comparison_figure(inputs_csv, out + 'if23_param_comparison.png')
 
     if 'inclinations' in steps:
         L.inclination_panels_figure(names, spines, f'{out}spine_inclination_panels_{tag}.png', n_iso=n)
