@@ -30,3 +30,6 @@ __pycache__/
 *.fits
 *.pkl
 *.log
+
+# paper source is kept private
+*.tex
